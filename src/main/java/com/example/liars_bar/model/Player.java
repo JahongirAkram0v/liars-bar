@@ -1,0 +1,40 @@
+package com.example.liars_bar.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Entity
+public class Player {
+
+    @Id
+    private Long id;
+    private String name;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private PlayerState playerState = PlayerState.START;
+    @OrderColumn(name = "cards_index")
+    @Builder.Default
+    private List<String> cards = new ArrayList<>();
+    @Builder.Default
+    private List<String> temp = new Stack<>();
+    private int chances;
+    private int attempt = 0;
+    @Builder.Default
+    private Boolean isAlive = true;
+    @Builder.Default
+    private int eN = 0;
+    private int messageId;
+
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
+}
