@@ -22,9 +22,13 @@ public class Group {
     @OrderColumn(name = "player_index")
     @Builder.Default
     private List<Player> players = new ArrayList<>();
+    @Builder.Default
+    private Boolean isLie = false;
+    private Long lastPlayerId;
 
     private Character Card;
-    private List<Character> throwCards;
+    @Builder.Default
+    private List<Character> throwCards = new ArrayList<>();
     private int playerCount;
     private int turn = 0;
 }

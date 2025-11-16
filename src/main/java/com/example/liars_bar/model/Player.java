@@ -25,7 +25,7 @@ public class Player {
     @Builder.Default
     private List<Character> cards = new ArrayList<>();
     @Builder.Default
-    private List<Integer> temp = new Stack<>();
+    private List<Integer> temp = new ArrayList<>();
     private int chances;
     private int attempt = 0;
     @Builder.Default

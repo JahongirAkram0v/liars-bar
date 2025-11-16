@@ -29,6 +29,8 @@ public class GameService {
                     .append(p.getAttempt())
                     .append("/6) " )
                     .append(getA(p, pTemp))
+                    .append(" | ♠️x")
+                    .append(p.getCards().size())
                     .append("\n");
         }
 

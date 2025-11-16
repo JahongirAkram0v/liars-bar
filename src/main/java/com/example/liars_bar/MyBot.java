@@ -41,7 +41,6 @@ public class MyBot extends TelegramWebhookBot {
             String callbackData = update.getCallbackQuery().getData();
             Long currentPlayerId = update.getCallbackQuery().getMessage().getChatId();
             String name = update.getCallbackQuery().getFrom().getFirstName();
-            System.out.println(callbackData + " " + currentPlayerId);
 
             Player player = playerService.findById(currentPlayerId)
                     .orElseGet(() -> {

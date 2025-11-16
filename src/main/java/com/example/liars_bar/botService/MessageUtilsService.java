@@ -67,7 +67,6 @@ public class MessageUtilsService {
     public static List<Map<String, Object>> getEditBid(List<Character> cards, List<Integer> temp) {
 
         List<Map<String, Object>> row = new ArrayList<>();
-        System.out.println(cards + " ### " + temp);
 
         for (int i = 0; i < cards.size(); i++) {
 
@@ -77,7 +76,6 @@ public class MessageUtilsService {
                 row.add(Map.of("text", cards.get(i), "callback_data", i));
             }
         }
-        System.out.println(row);
         return row;
     }
 
