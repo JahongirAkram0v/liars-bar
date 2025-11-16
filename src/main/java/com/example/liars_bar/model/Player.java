@@ -23,16 +23,15 @@ public class Player {
     private PlayerState playerState = PlayerState.START;
     @OrderColumn(name = "cards_index")
     @Builder.Default
-    private List<String> cards = new ArrayList<>();
+    private List<Character> cards = new ArrayList<>();
     @Builder.Default
-    private List<String> temp = new Stack<>();
+    private List<Integer> temp = new Stack<>();
     private int chances;
     private int attempt = 0;
     @Builder.Default
     private Boolean isAlive = true;
     @Builder.Default
-    private int eN = 0;
-    private int messageId;
+    private Boolean isActive = true;
 
     @ManyToOne
     @JoinColumn(name = "group_id")

@@ -4,6 +4,7 @@ import com.example.liars_bar.botService.CallbackQueryService;
 import com.example.liars_bar.botService.MessageUtilsService;
 import com.example.liars_bar.botService.ReferralService;
 import com.example.liars_bar.botService.SendService;
+import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.service.PlayerService;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -16,6 +17,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.example.liars_bar.model.PlayerState.START;
 
@@ -46,7 +48,7 @@ public class MyBot extends TelegramWebhookBot {
                         extracted(currentPlayerId);
                         return Player.builder()
                                 .id(currentPlayerId)
-                                .name(name.substring(0, Math.min(name.length(), 15)))
+                                .name(firstNCodePoints(name))
                                 .build();
                     });
             playerService.save(player);
@@ -70,14 +72,15 @@ public class MyBot extends TelegramWebhookBot {
         Player player = playerService.findById(currentPlayerId)
                 .orElseGet(() -> Player.builder()
                         .id(currentPlayerId)
-                        .name(name.substring(0, Math.min(name.length(), 15)))
+                        .name(firstNCodePoints(name))
                         .build());
         playerService.save(player);
 
         if (player.getPlayerState().equals(START) && text.startsWith("/start ")) {
 
-            if (referralService.isReferral(text)) {
-                referralService.referral(player);
+            Optional<Group> optionalGroup = referralService.isReferral(text);
+            if (optionalGroup.isPresent()) {
+                referralService.referral(player, optionalGroup.get());
                 System.out.println("Group id : " + player.getGroup().getId());
             } else {
                 extracted(currentPlayerId);
@@ -111,6 +114,12 @@ public class MyBot extends TelegramWebhookBot {
                 ),
                 "sendMessage"
         );
+    }
+
+    private static String firstNCodePoints(String s) {
+        int codePointCount = s.codePointCount(0, s.length());
+        int end = s.offsetByCodePoints(0, Math.min(codePointCount, 15));
+        return s.substring(0, end);
     }
 
     @Override

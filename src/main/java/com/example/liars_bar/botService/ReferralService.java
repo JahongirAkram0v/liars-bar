@@ -6,8 +6,6 @@ import com.example.liars_bar.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -31,10 +29,7 @@ public class ReferralService {
 
     public void referral(Player player, Group group) {
 
-        System.out.println("salom");
-
-        int playersSize = group.getPlayers() == null ? 0 : group.getPlayers().size();
-        System.out.println(playersSize);
+        int playersSize = group.getPlayers().size();
 
         if (playersSize < group.getPlayerCount()) {
             player.setChances(new Random().nextInt(6) + 1);

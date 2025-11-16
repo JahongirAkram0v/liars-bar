@@ -20,26 +20,27 @@ public class ShuffleService {
     private final GroupService groupService;
     private final GameService gameService;
 
-    private final List<String> cards = Arrays.asList(
-            "A", "A", "A", "A", "A", "A",
-            "K", "K", "K", "K", "K", "K",
-            "Q", "Q", "Q", "Q", "Q", "Q",
-            "J","J");
+    private final List<Character> cards = Arrays.asList(
+            'A', 'A', 'A', 'A', 'A', 'A',
+            'K', 'K', 'K', 'K', 'K', 'K',
+            'Q', 'Q', 'Q', 'Q', 'Q', 'Q',
+            'J','J');
 
     public void shuffle(Group group) {
         Collections.shuffle(cards, new Random());
 
-        List<Player> players = group.getPlayers();
+        List<Player> activePlayers = group.getPlayers().stream()
+                .filter(player -> player.getIsActive() && player.getIsAlive())
+                .toList();
 
-        for (int i = 0; i < players.size(); i++) {
-            players.get(i).setCards(cards.subList(5 * i, 5 * (i + 1)));
-            players.get(i).setPlayerState(GAME);
+        for (int i = 0; i < activePlayers.size(); i++) {
+            activePlayers.get(i).setCards(cards.subList(5 * i, 5 * (i + 1)));
+            activePlayers.get(i).setPlayerState(GAME);
         }
 
         group.setCard(Arrays.asList('A', 'K', 'Q').get(new Random().nextInt(3)));
-        group.setPlayers(players);
-        groupService.save(group);
 
+        groupService.save(group);
         gameService.game(group);
     }
 }

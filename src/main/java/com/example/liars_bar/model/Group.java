@@ -24,8 +24,7 @@ public class Group {
     private List<Player> players = new ArrayList<>();
 
     private Character Card;
-    private Character lastCard;
-    private Boolean isLie = false;
+    private List<Character> throwCards;
     private int playerCount;
     private int turn = 0;
 }
