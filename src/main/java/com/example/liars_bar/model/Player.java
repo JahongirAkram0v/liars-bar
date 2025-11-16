@@ -17,19 +17,27 @@ public class Player {
 
     @Id
     private Long id;
+    private int playerIndex;
     private String name;
+    private int chances;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private PlayerState playerState = PlayerState.START;
+
     @OrderColumn(name = "cards_index")
     @Builder.Default
     private List<Character> cards = new ArrayList<>();
+
     @Builder.Default
     private List<Integer> temp = new ArrayList<>();
-    private int chances;
+
+    @Builder.Default
     private int attempt = 0;
+
     @Builder.Default
     private Boolean isAlive = true;
+
     @Builder.Default
     private Boolean isActive = true;
 

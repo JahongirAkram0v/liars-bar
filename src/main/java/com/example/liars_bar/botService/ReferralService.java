@@ -33,6 +33,7 @@ public class ReferralService {
 
         if (playersSize < group.getPlayerCount()) {
             player.setChances(new Random().nextInt(6) + 1);
+            player.setPlayerIndex(playersSize);
             player.setPlayerState(ADD);
             player.setGroup(group);
             group.getPlayers().add(player);

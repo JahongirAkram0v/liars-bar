@@ -20,7 +20,7 @@ public class GameService {
                 .filter(player -> player.getIsActive() && player.getIsAlive())
                 .toList();
 
-        Player pTemp = activePlayers.get(group.getTurn());
+        Player pTemp = group.getPlayers().get(group.getTurn());
         //bar
         StringBuilder text = new StringBuilder("\uD83C\uDCCF : " + group.getCard() + "\n" );
         for (Player p: group.getPlayers()) {
@@ -34,6 +34,7 @@ public class GameService {
                     .append("\n");
         }
 
+        //bar
         group.getPlayers().forEach(
                 p -> sendService.send(
                         MessageUtilsService.sendMessage(
@@ -44,6 +45,7 @@ public class GameService {
                 )
         );
 
+        //current player
         sendService.send(
                 MessageUtilsService.sendMessage(
                         pTemp.getId(),
@@ -53,6 +55,7 @@ public class GameService {
                 "sendMessage"
         );
 
+        //other players
         for (Player p: activePlayers) {
             if (!p.equals(pTemp)) {
                 sendService.send(

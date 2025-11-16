@@ -19,12 +19,12 @@ public class Group {
     private String id;
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @OrderColumn(name = "player_index")
+    @OrderBy("playerIndex ASC")
     @Builder.Default
     private List<Player> players = new ArrayList<>();
     @Builder.Default
     private Boolean isLie = false;
-    private Long lastPlayerId;
+    private int lPI;
 
     private Character Card;
     @Builder.Default

@@ -59,7 +59,7 @@ public class CallbackQueryService {
                     MessageUtilsService.editMessage(
                             messageId,
                             player.getId(),
-                            "Siz ishonmadingiz"
+                            "Siz ishonmadingiz.\n" + group.getThrowCards().toString() + " tashlagan ekan."
                     ),
                     "editMessageText"
             );
@@ -77,126 +77,60 @@ public class CallbackQueryService {
             }
 
             ///
+            Player p = (group.getIsLie()) ? group.getPlayers().get(group.getLPI()) : player;
+            group.setTurn(group.getIsLie() ? group.getLPI(): group.getTurn());
+            if (p.getAttempt() + 1 == p.getChances()) {
+                p.setIsAlive(false);
+                p.setIsActive(false);
 
-            if (group.getIsLie()) {
+                sendService.send(
+                        MessageUtilsService.sendMessage(
+                                p.getId(),
+                                "Siz o'ldingiz."
+                        ),
+                        "sendMessage"
+                );
 
-                Player lastPlayer = playerService.findById(group.getLastPlayerId()).orElseThrow();
-                if (lastPlayer.getAttempt() + 1 == lastPlayer.getChances()) {
-                    lastPlayer.setIsAlive(false);
-                    lastPlayer.setIsActive(false);
-
-                    sendService.send(
+                for (Player t : group.getPlayers()) {
+                    if (!t.equals(p)) sendService.send(
                             MessageUtilsService.sendMessage(
-                                    lastPlayer.getId(),
-                                    "Siz o'ldingiz."
+                                    t.getId(),
+                                    p.getName() + " o'ldi."
                             ),
                             "sendMessage"
                     );
-
-                    for (Player p : group.getPlayers()) {
-                        if (!p.equals(lastPlayer)) sendService.send(
-                                MessageUtilsService.sendMessage(
-                                        p.getId(),
-                                        lastPlayer.getName() + " o'ldi."
-                                ),
-                                "sendMessage"
-                        );
-                    }
-
-                } else {
-                    lastPlayer.setAttempt(lastPlayer.getAttempt() + 1);
-
-                    sendService.send(
-                            MessageUtilsService.sendMessage(
-                                    lastPlayer.getId(),
-                                    "Omadingiz bor ekan."
-                            ),
-                            "sendMessage"
-                    );
-
-                    for (Player p : group.getPlayers()) {
-                        if (!p.equals(lastPlayer)) sendService.send(
-                                MessageUtilsService.sendMessage(
-                                        p.getId(),
-                                        lastPlayer.getName() + " omadi bor ekan."
-                                ),
-                                "sendMessage"
-                        );
-                    }
                 }
-                playerService.save(lastPlayer);
-
             } else {
+                p.setAttempt(p.getAttempt() + 1);
 
-                if (player.getAttempt() + 1 == player.getChances()) {
-                    player.setIsAlive(false);
-                    player.setIsActive(false);
+                sendService.send(
+                        MessageUtilsService.sendMessage(
+                                p.getId(),
+                                "Omadingiz bor ekan."
+                        ),
+                        "sendMessage"
+                );
 
-                    sendService.send(
+                for (Player t : group.getPlayers()) {
+                    if (!t.equals(p)) sendService.send(
                             MessageUtilsService.sendMessage(
-                                    player.getId(),
-                                    "Siz o'ldingiz."
+                                    t.getId(),
+                                    p.getName() + " omadi bor ekan."
                             ),
                             "sendMessage"
                     );
-
-                    for (Player p : group.getPlayers()) {
-                        if (!p.equals(player)) sendService.send(
-                                MessageUtilsService.sendMessage(
-                                        p.getId(),
-                                        player.getName() + " o'ldi."
-                                ),
-                                "sendMessage"
-                        );
-                    }
-
-                } else {
-                    player.setAttempt(player.getAttempt() + 1);
-
-                    sendService.send(
-                            MessageUtilsService.sendMessage(
-                                    player.getId(),
-                                    "Omadingiz bor ekan."
-                            ),
-                            "sendMessage"
-                    );
-
-                    for (Player p : group.getPlayers()) {
-                        if (!p.equals(player)) sendService.send(
-                                MessageUtilsService.sendMessage(
-                                        p.getId(),
-                                        player.getName() + " omadi bor ekan."
-                                ),
-                                "sendMessage"
-                        );
-                    }
                 }
-                playerService.save(player);
-
-                List<Player> activePlayers = group.getPlayers().stream()
-                        .filter(p -> p.getIsActive() && p.getIsAlive())
-                        .toList();
-
-                int activePlayerSize = activePlayers.size();
-
-                int turn = group.getTurn();
-
-                if (activePlayerSize != 1) {
-
-                    if (player.getIsActive()) {
-                        turn = (turn + 1) % activePlayerSize;
-                    } else {
-                        turn = turn % (activePlayerSize - 1);
-                    }
-                    group.setTurn(turn);
-
-                }
-
-
             }
 
+            List<Player> activePlayers = new ArrayList<>();
+            for (Player t: group.getPlayers()) {
+                t.setIsActive(true);
+                activePlayers.add(t);
+            }
+            group.setPlayers(activePlayers);
+
+            group.setTurn(playerService.index(group));
             group.setThrowCards(new ArrayList<>());
-            groupService.save(group);
 
             List<Player> alivePlayers = group.getPlayers().stream()
                     .filter(Player::getIsAlive)
@@ -213,34 +147,36 @@ public class CallbackQueryService {
                         "sendMessage"
                 );
 
-                for (Player p : group.getPlayers()) {
-                    if (!p.equals(winner)) {
+                for (Player  t: group.getPlayers()) {
+                    if (!t.equals(winner)) {
                         sendService.send(
                                 MessageUtilsService.sendMessage(
-                                        p.getId(),
+                                        t.getId(),
                                         "O'yin tugadi. G'olib: " + winner.getName() + "\nQayta boshlash uchun /start"
                                 ),
                                 "sendMessage"
                         );
                     }
                 }
-
                 return;
             }
 
+            groupService.save(group);
             shuffleService.shuffle(group);
         }
         else if (callbackData.equals("t")) {
 
             Group group = player.getGroup();
 
-            if (player.getTemp() == null || player.getTemp().isEmpty()) {
+            if (player.getTemp().isEmpty()) {
                 sendService.send(
                         MessageUtilsService.errorMessage(callbackQueryId),
                         "answerCallbackQuery"
                 );
                 return;
             }
+
+
 
             List<Character> thrownCards = player.getTemp().stream()
                     .map(i -> player.getCards().get(i))
@@ -252,19 +188,6 @@ public class CallbackQueryService {
                     playerCards.add(player.getCards().get(i));
                 }
             }
-            List<Player> activePlayers = group.getPlayers().stream()
-                    .filter(p -> p.getIsActive() && p.getIsAlive())
-                    .toList();
-
-            int activePlayerSize = activePlayers.size();
-            if (playerCards.isEmpty()) {
-                if (activePlayerSize > 1) {
-                    player.setIsActive(false);
-                }
-            }
-
-            player.setCards(playerCards);
-            group.setThrowCards(thrownCards);
 
             sendService.send(
                     MessageUtilsService.editMessage(
@@ -286,22 +209,19 @@ public class CallbackQueryService {
                     );
                 }
             }
-
+            player.setCards(playerCards);
             player.setTemp(new ArrayList<>());
-
-            int turn = group.getTurn();
-            if (player.getIsActive()) {
-                turn = (turn + 1) % activePlayerSize;
-            } else {
-                turn = turn % (activePlayerSize - 1);
+            if (player.getCards().isEmpty()) {
+                player.setIsActive(false);
             }
-            group.setTurn(turn);
+            System.out.println("Turn " + group.getTurn());
 
+            group.setThrowCards(thrownCards);
+            group.setTurn(playerService.index(group));
             boolean isLie = thrownCards.stream()
                     .anyMatch(s -> s != group.getCard() && s != 'J');
             group.setIsLie(isLie);
-            group.setLastPlayerId(player.getId());
-
+            group.setLPI(player.getPlayerIndex());
             groupService.save(group);
 
             gameService.game(group);
@@ -351,6 +271,5 @@ public class CallbackQueryService {
                     "editMessageText"
             );
         }
-
     }
 }
