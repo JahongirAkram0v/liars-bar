@@ -33,6 +33,12 @@ public class ShuffleService {
                 .filter(player -> player.getIsActive() && player.getIsAlive())
                 .toList();
 
+        if (activePlayers.size() == 1) {
+            gameService.winner(activePlayers.getFirst());
+            groupService.delete(group);
+            return;
+        }
+
         for (int i = 0; i < activePlayers.size(); i++) {
             activePlayers.get(i).setCards(cards.subList(5 * i, 5 * (i + 1)));
             activePlayers.get(i).setPlayerState(GAME);

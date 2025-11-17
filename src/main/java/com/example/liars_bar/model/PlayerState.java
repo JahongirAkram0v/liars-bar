@@ -4,6 +4,5 @@ public enum PlayerState {
 
     START,
     ADD,
-    SHUFFLE,
     GAME,
 }

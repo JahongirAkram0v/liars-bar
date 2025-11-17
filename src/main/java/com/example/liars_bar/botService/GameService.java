@@ -69,6 +69,31 @@ public class GameService {
         }
     }
 
+    public void winner(Player player) {
+
+        Group group = player.getGroup();
+
+        sendService.send(
+                MessageUtilsService.sendMessage(
+                        player.getId(),
+                        "Siz g'olib bo'ldingiz! Tabriklaymiz!\nQayta boshlash uchun /start"
+                ),
+                "sendMessage"
+        );
+
+        for (Player  t: group.getPlayers()) {
+            if (!t.equals(player)) {
+                sendService.send(
+                        MessageUtilsService.sendMessage(
+                                t.getId(),
+                                "O'yin tugadi. G'olib: " + player.getName() + "\nQayta boshlash uchun /start"
+                        ),
+                        "sendMessage"
+                );
+            }
+        }
+    }
+
     private String getA(Player p, Player playerTemp) {
         return p.equals(playerTemp) ? "\uD83D\uDC7E" : "";
     }

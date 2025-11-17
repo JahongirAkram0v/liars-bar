@@ -22,17 +22,7 @@ public class PlayerService {
         playerRepo.save(player);
     }
 
-    public int index(Group group) {
-
-        List<Integer> indices = group.getPlayers().stream()
-                .filter(p -> p.getIsActive() && p.getIsAlive())
-                .map(Player::getPlayerIndex)
-                .toList();
-        System.out.println(indices);
-
-        for (int i: indices) {
-            if (group.getTurn() < i) return i;
-        }
-        return indices.getFirst();
+    public void delete(Player player) {
+        playerRepo.delete(player);
     }
 }

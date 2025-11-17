@@ -3,7 +3,6 @@ package com.example.liars_bar.botService;
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.service.GroupService;
-import com.example.liars_bar.service.PlayerService;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,6 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static com.example.liars_bar.model.PlayerState.ADD;
 
 @Component
 @RequiredArgsConstructor
@@ -20,12 +21,19 @@ public class CallbackQueryService {
     private final String botUsername = dotenv.get("TELEGRAM_BOT_USERNAME");
 
     private final GroupService groupService;
-    private final PlayerService playerService;
     private final SendService sendService;
     private final ShuffleService shuffleService;
     private final GameService gameService;
 
     public void check(String callbackData, Integer messageId, Player player, String callbackQueryId) {
+
+        if (player.getPlayerState().equals(ADD)) {
+            sendService.send(
+                    MessageUtilsService.errorMessage(callbackQueryId),
+                    "answerCallbackQuery"
+            );
+            return;
+        }
 
         if (callbackData.startsWith("c ")) {
             int count = callbackData.charAt(2) - '0';
@@ -59,7 +67,7 @@ public class CallbackQueryService {
                     MessageUtilsService.editMessage(
                             messageId,
                             player.getId(),
-                            "Siz ishonmadingiz.\n" + group.getThrowCards().toString() + " tashlagan ekan."
+                            "Siz ishonmadingiz.\n" + group.getThrowCards() + " tashlagan ekan."
                     ),
                     "editMessageText"
             );
@@ -77,8 +85,8 @@ public class CallbackQueryService {
             }
 
             ///
-            Player p = (group.getIsLie()) ? group.getPlayers().get(group.getLPI()) : player;
             group.setTurn(group.getIsLie() ? group.getLPI(): group.getTurn());
+            Player p =group.getPlayers().get(group.getTurn());
             if (p.getAttempt() + 1 == p.getChances()) {
                 p.setIsAlive(false);
                 p.setIsActive(false);
@@ -129,7 +137,7 @@ public class CallbackQueryService {
             }
             group.setPlayers(activePlayers);
 
-            group.setTurn(playerService.index(group));
+            group.setTurn(groupService.index(group));
             group.setThrowCards(new ArrayList<>());
 
             List<Player> alivePlayers = group.getPlayers().stream()
@@ -137,27 +145,8 @@ public class CallbackQueryService {
                     .toList();
 
             if (alivePlayers.size() == 1) {
-                Player winner = alivePlayers.getFirst();
-
-                sendService.send(
-                        MessageUtilsService.sendMessage(
-                                winner.getId(),
-                                "Siz g'olib bo'ldingiz! Tabriklaymiz!\nQayta boshlash uchun /start"
-                        ),
-                        "sendMessage"
-                );
-
-                for (Player  t: group.getPlayers()) {
-                    if (!t.equals(winner)) {
-                        sendService.send(
-                                MessageUtilsService.sendMessage(
-                                        t.getId(),
-                                        "O'yin tugadi. G'olib: " + winner.getName() + "\nQayta boshlash uchun /start"
-                                ),
-                                "sendMessage"
-                        );
-                    }
-                }
+                gameService.winner(alivePlayers.getFirst());
+                groupService.delete(group);
                 return;
             }
 
@@ -217,7 +206,7 @@ public class CallbackQueryService {
             System.out.println("Turn " + group.getTurn());
 
             group.setThrowCards(thrownCards);
-            group.setTurn(playerService.index(group));
+            group.setTurn(groupService.index(group));
             boolean isLie = thrownCards.stream()
                     .anyMatch(s -> s != group.getCard() && s != 'J');
             group.setIsLie(isLie);

@@ -88,5 +88,21 @@ public class MessageUtilsService {
         );
     }
 
+    public static Map<String, Object> start(Long id) {
+        List<List<Map<String, Object>>> keyboards = List.of(
+                List.of(
+                        Map.of("text", "2", "callback_data", "c 2"),
+                        Map.of("text", "3", "callback_data", "c 3"),
+                        Map.of("text", "4", "callback_data", "c 4")
+                )
+        );
+
+        return MessageUtilsService.sendMessage(
+                id,
+                "O'yinchilar sonini tanlang!",
+                keyboards
+        );
+    }
+
 
 }

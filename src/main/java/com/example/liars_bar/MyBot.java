@@ -1,11 +1,9 @@
 package com.example.liars_bar;
 
-import com.example.liars_bar.botService.CallbackQueryService;
-import com.example.liars_bar.botService.MessageUtilsService;
-import com.example.liars_bar.botService.ReferralService;
-import com.example.liars_bar.botService.SendService;
+import com.example.liars_bar.botService.*;
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
+import com.example.liars_bar.model.PlayerState;
 import com.example.liars_bar.service.PlayerService;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +13,9 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static com.example.liars_bar.model.PlayerState.START;
+import static com.example.liars_bar.model.PlayerState.*;
 
 @Component
 @RequiredArgsConstructor
@@ -33,27 +29,28 @@ public class MyBot extends TelegramWebhookBot {
     private final ReferralService referralService;
     private final SendService sendService;
     private final CallbackQueryService callbackService;
+    private final ShuffleService shuffleService;
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
 
         if (update.hasCallbackQuery()) {
+
             String callbackData = update.getCallbackQuery().getData();
             Long currentPlayerId = update.getCallbackQuery().getMessage().getChatId();
-            String name = update.getCallbackQuery().getFrom().getFirstName();
-
-            Player player = playerService.findById(currentPlayerId)
-                    .orElseGet(() -> {
-                        extracted(currentPlayerId);
-                        return Player.builder()
-                                .id(currentPlayerId)
-                                .name(firstNCodePoints(name))
-                                .build();
-                    });
-            playerService.save(player);
-
             Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
             String callbackQueryId = update.getCallbackQuery().getId();
+
+            Optional<Player> optionalPlayer = playerService.findById(currentPlayerId);
+            if (optionalPlayer.isEmpty()) {
+                sendService.send(
+                        MessageUtilsService.errorMessage(callbackQueryId),
+                        "answerCallbackQuery"
+                );
+                return null;
+            }
+            Player player = optionalPlayer.get();
+
             callbackService.check(callbackData, messageId, player, callbackQueryId);
 
             return null;
@@ -92,25 +89,54 @@ public class MyBot extends TelegramWebhookBot {
             return null;
         }
 
+        if (text.equals("/quit")) {
+
+            Group group = player.getGroup();
+            if (group == null) {
+                sendService.send(
+                        MessageUtilsService.sendMessage(
+                                player.getId(),
+                                "Siz hech qanday guruhda emassiz"
+                        ),
+                        "sendMessage"
+                );
+                return null;
+            }
+
+            PlayerState state = player.getPlayerState();
+
+            sendService.send(
+                    MessageUtilsService.sendMessage(
+                            player.getId(),
+                            "Siz guruhni tark etdingiz"
+                    ),
+                    "sendMessage"
+            );
+
+            group.getPlayers().forEach(
+                    p -> sendService.send(
+                            MessageUtilsService.sendMessage(
+                                    p.getId(),
+                                    player.getName() + " guruhni tark etdi"
+                            ),
+                            "sendMessage"
+                    )
+            );
+
+            playerService.delete(player);
+            if (state.equals(GAME)) {
+                shuffleService.shuffle(group);
+            }
+
+            return null;
+        }
+
         return null;
     }
 
     private void extracted(Long currentPlayerId) {
-        System.out.println("Sending player count selection to player: " + currentPlayerId);
-        List<List<Map<String, Object>>> keyboards = List.of(
-                List.of(
-                        Map.of("text", "2", "callback_data", "c 2"),
-                        Map.of("text", "3", "callback_data", "c 3"),
-                        Map.of("text", "4", "callback_data", "c 4")
-                )
-        );
-
         sendService.send(
-                MessageUtilsService.sendMessage(
-                        currentPlayerId,
-                        "O'yinchilar sonini tanlang!",
-                        keyboards
-                ),
+                MessageUtilsService.start(currentPlayerId),
                 "sendMessage"
         );
     }
