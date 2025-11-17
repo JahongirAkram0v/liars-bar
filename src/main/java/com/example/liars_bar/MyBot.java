@@ -4,6 +4,7 @@ import com.example.liars_bar.botService.*;
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.model.PlayerState;
+import com.example.liars_bar.service.GroupService;
 import com.example.liars_bar.service.PlayerService;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class MyBot extends TelegramWebhookBot {
     private final String botWebhookPath = dotenv.get("TELEGRAM_BOT_WEBHOOK_PATH");
 
     private final PlayerService playerService;
+    private final GroupService groupService;
     private final ReferralService referralService;
     private final SendService sendService;
     private final CallbackQueryService callbackService;
@@ -113,17 +115,27 @@ public class MyBot extends TelegramWebhookBot {
                     "sendMessage"
             );
 
-            group.getPlayers().forEach(
-                    p -> sendService.send(
+            for (Player p: group.getPlayers()) {
+                if (!p.equals(player)) {
+                    sendService.send(
                             MessageUtilsService.sendMessage(
                                     p.getId(),
                                     player.getName() + " guruhni tark etdi"
                             ),
                             "sendMessage"
-                    )
-            );
+                    );
+                }
+            }
 
+            group.getPlayers().remove(player);
             playerService.delete(player);
+            group.getPlayers().forEach(
+                    t -> System.out.println(t.getId() + "////")
+            );
+            if (group.getPlayers().isEmpty()) {
+                groupService.delete(group);
+                System.out.println("****");
+            }
             if (state.equals(GAME)) {
                 shuffleService.shuffle(group);
             }

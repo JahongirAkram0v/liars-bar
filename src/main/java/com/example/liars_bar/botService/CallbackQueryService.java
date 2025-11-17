@@ -39,6 +39,17 @@ public class CallbackQueryService {
             int count = callbackData.charAt(2) - '0';
             Group group = new Group();
             group.setPlayerCount(count);
+            player.setPlayerState(ADD);
+            player.setGroup(group);
+
+            sendService.send(
+                    MessageUtilsService.sendMessage(
+                            player.getId(),
+                            "Siz guruhga qo'shildingiz."
+                    ),
+                    "sendMessage"
+            );
+
             groupService.save(group);
 
             sendService.send(

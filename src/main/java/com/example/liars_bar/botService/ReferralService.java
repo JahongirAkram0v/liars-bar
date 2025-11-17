@@ -39,15 +39,25 @@ public class ReferralService {
             group.getPlayers().add(player);
             groupService.save(group);
 
-            group.getPlayers().forEach(
-                    p -> sendService.send(
+            sendService.send(
+                    MessageUtilsService.sendMessage(
+                            player.getId(),
+                            "Siz guruhga qo'shildingiz."
+                    ),
+                    "sendMessage"
+            );
+
+            for (Player p: group.getPlayers()) {
+                if (!p.equals(player)) {
+                    sendService.send(
                             MessageUtilsService.sendMessage(
                                     p.getId(),
                                     player.getName() + " guruhga qo'shildi."
                             ),
                             "sendMessage"
-                    )
-            );
+                    );
+                }
+            }
 
             if (playersSize + 1 == group.getPlayerCount()) {
                 shuffleService.shuffle(group);
