@@ -45,7 +45,7 @@ public class CallbackQueryService {
             sendService.send(
                     MessageUtilsService.sendMessage(
                             player.getId(),
-                            "Siz guruhga qo'shildingiz."
+                            "Guruh yaratdingiz va qoshildingiz, referral linkni do'stlaringizga ulashing."
                     ),
                     "sendMessage"
             );
