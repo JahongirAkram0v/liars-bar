@@ -2,10 +2,12 @@ package com.example.liars_bar.botService;
 
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
+import com.example.liars_bar.model.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -22,24 +24,15 @@ public class GameService {
 
         Player pTemp = group.getPlayers().get(group.getTurn());
         //bar
-        StringBuilder text = new StringBuilder("\uD83C\uDCCF : " + group.getCard() + "\n" );
-        for (Player p: group.getPlayers()) {
-            text.append(getANC(p))
-                    .append(" - (" )
-                    .append(p.getAttempt())
-                    .append("/6) " )
-                    .append(getA(p, pTemp))
-                    .append(" | ♠️x")
-                    .append(p.getCards().size())
-                    .append("\n");
-        }
+        Result result = getResult(group, pTemp);
 
         //bar
         group.getPlayers().forEach(
                 p -> sendService.send(
                         MessageUtilsService.sendMessage(
                                 p.getId(),
-                                text.toString()
+                                result.text(),
+                                result.keyboard()
                         ),
                         "sendMessage"
                 )
@@ -67,6 +60,37 @@ public class GameService {
                 );
             }
         }
+    }
+
+    public Result getResult(Group group, Player pTemp) {
+        List<List<Map<String, Object>>> keyboard = List.of(
+                List.of(
+                        Map.of("text", emojis.get(1), "callback_data", "e"+1),
+                        Map.of("text", emojis.get(2), "callback_data", "e"+2),
+                        Map.of("text", emojis.get(3), "callback_data", "e"+3),
+                        Map.of("text", emojis.get(4), "callback_data", "e"+4),
+                        Map.of("text", emojis.get(5), "callback_data", "e"+5)
+                )
+        );
+
+        StringBuilder text = new StringBuilder("\uD83C\uDCCF : " + group.getCard() + "\n" );
+        for (Player p: group.getPlayers()) {
+            text.append(getANC(p))
+                    .append(" - (" )
+                    .append(p.getAttempt())
+                    .append("/6) " )
+                    .append(getA(p, pTemp))
+                    .append(" | ♠️x")
+                    .append(p.getCards().size())
+                    .append(getE(p))
+                    .append("\n");
+        }
+        return new Result(keyboard, text.toString());
+    }
+
+    private String getE(Player p) {
+        if (p.getEM() == 0) return emojis.getFirst();
+        return " /" + emojis.get(p.getEM());
     }
 
     public void winner(Player player) {

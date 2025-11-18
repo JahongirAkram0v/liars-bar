@@ -2,6 +2,7 @@ package com.example.liars_bar.botService;
 
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
+import com.example.liars_bar.model.Result;
 import com.example.liars_bar.service.GroupService;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +65,23 @@ public class CallbackQueryService {
                     "editMessageText"
             );
         }
+        else if (callbackData.startsWith("e")) {
+            Group group = player.getGroup();
+            int index = callbackData.charAt(1) - '0';
+            player.setEM(index);
+            Result result = gameService.getResult(group, player);
+            group.getPlayers().forEach(
+                    p -> sendService.send(
+                            MessageUtilsService.editMessage(
+                                    messageId,
+                                    p.getId(),
+                                    result.text(),
+                                    result.keyboard()
+                            ),
+                            "editMessageText"
+                    )
+            );
+        }
         else if (callbackData.equals("l")) {
 
             Group group = player.getGroup();
@@ -87,7 +105,9 @@ public class CallbackQueryService {
             );
 
             ///
-            group.setTurn(group.getIsLie() ? group.getLPI(): group.getTurn());
+            boolean isLie = group.getThrowCards().stream()
+                    .anyMatch(s -> s != group.getCard() && s != 'J');
+            group.setTurn(isLie ? group.getLPI(): group.getTurn());
             Player p =group.getPlayers().get(group.getTurn());
             if (p.getAttempt() + 1 == p.getChances()) {
                 p.setIsAlive(false);
@@ -208,9 +228,6 @@ public class CallbackQueryService {
 
             group.setThrowCards(thrownCards);
             group.setTurn(groupService.index(group));
-            boolean isLie = thrownCards.stream()
-                    .anyMatch(s -> s != group.getCard() && s != 'J');
-            group.setIsLie(isLie);
             group.setLPI(player.getPlayerIndex());
             groupService.save(group);
 
@@ -267,10 +284,10 @@ public class CallbackQueryService {
         StringBuilder cards = new StringBuilder();
         StringBuilder correct = new StringBuilder();
         for (char c : throwCards) {
-            if (c == card) {
+            if (c == card || c == 'J') {
                 correct.append("\uD83D\uDFE9 ");
             } else correct.append("\uD83D\uDFE5 ");
-            cards.append(c).append(" ");
+            cards.append(c).append("    ");
         }
         return cards.toString().trim() + "\n" + correct.toString().trim();
     }

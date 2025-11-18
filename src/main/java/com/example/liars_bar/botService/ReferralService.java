@@ -36,6 +36,7 @@ public class ReferralService {
             player.setPlayerIndex(playersSize);
             player.setPlayerState(ADD);
             player.setGroup(group);
+            group.getPlayers().add(player);
             groupService.save(group);
 
             sendService.send(

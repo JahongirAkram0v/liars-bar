@@ -36,6 +36,9 @@ public class Player {
     private int attempt = 0;
 
     @Builder.Default
+    private int eM = 0;
+
+    @Builder.Default
     private Boolean isAlive = true;
 
     @Builder.Default

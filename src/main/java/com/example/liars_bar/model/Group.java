@@ -22,8 +22,6 @@ public class Group {
     @OrderBy("playerIndex ASC")
     @Builder.Default
     private List<Player> players = new ArrayList<>();
-    @Builder.Default
-    private Boolean isLie = false;
     private int lPI;
 
     private Character Card;
