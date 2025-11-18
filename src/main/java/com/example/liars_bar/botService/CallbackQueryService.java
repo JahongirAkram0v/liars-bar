@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import static com.example.liars_bar.model.PlayerState.ADD;
 
@@ -39,6 +40,7 @@ public class CallbackQueryService {
             int count = callbackData.charAt(2) - '0';
             Group group = new Group();
             group.setPlayerCount(count);
+            player.setChances(new Random().nextInt(6) + 1);
             player.setPlayerState(ADD);
             player.setGroup(group);
 
@@ -74,26 +76,15 @@ public class CallbackQueryService {
                 return;
             }
 
-            sendService.send(
-                    MessageUtilsService.editMessage(
-                            messageId,
-                            player.getId(),
-                            "Siz ishonmadingiz.\n" + group.getThrowCards() + " tashlagan ekan."
-                    ),
-                    "editMessageText"
-            );
-
-            for (Player p: group.getPlayers()) {
-                if (!p.equals(player)) {
-                    sendService.send(
+            group.getPlayers().forEach(
+                    p -> sendService.send(
                             MessageUtilsService.sendMessage(
                                     p.getId(),
-                                    player.getName() + " ishonmadi.\n" + group.getThrowCards().toString() + " tashlagan ekan."
+                                    special(group.getThrowCards(), group.getCard())
                             ),
                             "sendMessage"
-                    );
-                }
-            }
+                    )
+            );
 
             ///
             group.setTurn(group.getIsLie() ? group.getLPI(): group.getTurn());
@@ -203,7 +194,7 @@ public class CallbackQueryService {
                     sendService.send(
                             MessageUtilsService.sendMessage(
                                     p.getId(),
-                                    player.getName() + " " + player.getTemp().size() + " ta karta tashladi."
+                                    "♠️x" + player.getTemp().size() + " " + group.getCard()
                             ),
                             "sendMessage"
                     );
@@ -214,7 +205,6 @@ public class CallbackQueryService {
             if (player.getCards().isEmpty()) {
                 player.setIsActive(false);
             }
-            System.out.println("Turn " + group.getTurn());
 
             group.setThrowCards(thrownCards);
             group.setTurn(groupService.index(group));
@@ -271,5 +261,17 @@ public class CallbackQueryService {
                     "editMessageText"
             );
         }
+    }
+
+    private String special(List<Character> throwCards, Character card) {
+        StringBuilder cards = new StringBuilder();
+        StringBuilder correct = new StringBuilder();
+        for (char c : throwCards) {
+            if (c == card) {
+                correct.append("\uD83D\uDFE9 ");
+            } else correct.append("\uD83D\uDFE5 ");
+            cards.append(c).append(" ");
+        }
+        return cards.toString().trim() + "\n" + correct.toString().trim();
     }
 }

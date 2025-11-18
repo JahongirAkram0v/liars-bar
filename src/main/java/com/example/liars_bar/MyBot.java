@@ -79,7 +79,6 @@ public class MyBot extends TelegramWebhookBot {
             Optional<Group> optionalGroup = referralService.isReferral(text);
             if (optionalGroup.isPresent()) {
                 referralService.referral(player, optionalGroup.get());
-                System.out.println("Group id : " + player.getGroup().getId());
             } else {
                 extracted(currentPlayerId);
             }
@@ -129,12 +128,8 @@ public class MyBot extends TelegramWebhookBot {
 
             group.getPlayers().remove(player);
             playerService.delete(player);
-            group.getPlayers().forEach(
-                    t -> System.out.println(t.getId() + "////")
-            );
             if (group.getPlayers().isEmpty()) {
                 groupService.delete(group);
-                System.out.println("****");
             }
             if (state.equals(GAME)) {
                 shuffleService.shuffle(group);

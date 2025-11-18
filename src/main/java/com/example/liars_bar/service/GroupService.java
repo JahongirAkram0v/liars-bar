@@ -33,7 +33,6 @@ public class GroupService {
                 .filter(p -> p.getIsActive() && p.getIsAlive())
                 .map(Player::getPlayerIndex)
                 .toList();
-        System.out.println(indices);
 
         for (int i: indices) {
             if (group.getTurn() < i) return i;
