@@ -137,7 +137,7 @@ public class MyBot extends TelegramWebhookBot {
                 groupService.delete(group);
             }
             if (state.equals(GAME)) {
-                shuffleService.shuffle(group, new String[]{"", "", textG});
+                shuffleService.shuffle(group, new String[]{"", textG});
             }
 
             return null;

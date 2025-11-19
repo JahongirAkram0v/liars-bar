@@ -84,7 +84,7 @@ public class CallbackQueryService {
                     .count();
 
             if (playerCount == group.getPlayerCount()) {
-                shuffleService.shuffle(group, new String[]{"", "", ""});
+                shuffleService.shuffle(group, new String[]{"", ""});
             } else {
                 sendService.send(
                         MessageUtilsService.editMessage(
@@ -143,6 +143,11 @@ public class CallbackQueryService {
                             "editMessageText"
                     )
             );
+            sendService.send(
+                    MessageUtilsService.editCard(player, index),
+                    "editMessageText"
+            );
+
         }
         else if (callbackData.equals("l")) {
 
@@ -163,20 +168,26 @@ public class CallbackQueryService {
             group.setTurn(isLie ? group.getLPI(): group.getTurn());
             Player p = group.getPlayers().get(group.getTurn());
 
-            String textP;
             String textG;
 
             if (p.getAttempt() + 1 == p.getChances()) {
                 p.setIsAlive(false);
                 p.setIsActive(false);
 
-                textP = "Siz yutqazdingiz.";
-                textG = p.getName() + " yutqazdi.";
+                sendService.send(
+                        MessageUtilsService.editMessage(
+                                p.getCardI(),
+                                p.getId(),
+                                "Siz yutqazdingiz."
+                        ),
+                        "editMessageText"
+                );
+
+                textG = p.getName() + " mag'lub bo'ldi.";
             } else {
                 p.setAttempt(p.getAttempt() + 1);
 
-                textP = "Omadingiz bor ekan.";
-                textG = p.getName() + " omadi bor ekan.";
+                textG = p.getName() + "ning omadi bor ekan.";
             }
 
             List<Player> activePlayers = new ArrayList<>();
@@ -199,7 +210,7 @@ public class CallbackQueryService {
                 return;
             }
             groupService.save(group);
-            shuffleService.shuffle(group, new String[]{special, textP, textG});
+            shuffleService.shuffle(group, new String[]{special, textG});
         }
         else if (callbackData.equals("t")) {
 
@@ -243,6 +254,14 @@ public class CallbackQueryService {
         }
         else {
             Group group = player.getGroup();
+
+            if (group == null) {
+                sendService.send(
+                        MessageUtilsService.errorMessage(callbackQueryId),
+                        "answerCallbackQuery"
+                );
+                return;
+            }
 
             List<Player> activePlayers = group.getPlayers().stream()
                     .filter(p -> p.getIsActive() && p.getIsAlive())

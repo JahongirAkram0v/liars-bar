@@ -28,8 +28,7 @@ public class GameService {
 
         Player pTemp = group.getPlayers().get(group.getTurn());
         //bar
-        String result = getResult(group, pTemp);
-        String extra = texts[0] + "\n" +texts[2];
+        String extra = texts[0] + "\n" +texts[1];
 
         if (group.isBar()) {
             group.getPlayers().forEach(
@@ -37,7 +36,7 @@ public class GameService {
                             MessageUtilsService.editMessage(
                                     p.getBar(),
                                     p.getId(),
-                                    result + "\n\n" + (extra.trim())
+                                    getResult(group, pTemp) + "\n\n" + (extra.trim())
                             ),
                             "editMessageText"
                     )
@@ -49,8 +48,8 @@ public class GameService {
                 sendService.send(
                         MessageUtilsService.sendMessage(
                                 p.getId(),
-                                "Iltimos bosing.\nQo'lni ko'rish",
-                                List.of(List.of( Map.of("text", "\uD83D\uDC41", "callback_data", "eye")))
+                                "Iltimos bosing.",
+                                List.of(List.of( Map.of("text", "❇️", "callback_data", "eye")))
                         ),
                         "sendMessage"
                 );
@@ -72,26 +71,11 @@ public class GameService {
             );
         }
 
-
         //other players
-        List<List<Map<String, Object>>> keyboard = List.of(
-                List.of(
-                        Map.of("text", emojis.get(1), "callback_data", "e"+1),
-                        Map.of("text", emojis.get(2), "callback_data", "e"+2),
-                        Map.of("text", emojis.get(3), "callback_data", "e"+3),
-                        Map.of("text", emojis.get(4), "callback_data", "e"+4),
-                        Map.of("text", emojis.get(5), "callback_data", "e"+5)
-                )
-        );
         for (Player p: activePlayers) {
             if (!p.equals(pTemp) && p.isCard()) {
                 sendService.send(
-                        MessageUtilsService.editMessage(
-                                p.getCardI(),
-                                p.getId(),
-                                listCard(p.getCards()),
-                                keyboard
-                        ),
+                        MessageUtilsService.getCard(p),
                         "editMessageText"
                 );
             }
@@ -105,14 +89,6 @@ public class GameService {
         }
         group.setPlayers(players);
         groupService.save(group);
-    }
-
-    private String listCard(List<Character> cards) {
-        StringBuilder text = new StringBuilder("▪️ ");
-        for (char c : cards) {
-            text.append(" ").append(c).append(" ");
-        }
-        return text + " ▪️";
     }
 
     public String getResult(Group group, Player pTemp) {

@@ -1,15 +1,18 @@
 package com.example.liars_bar.botService;
 
-import lombok.RequiredArgsConstructor;
+import com.example.liars_bar.model.Player;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
-@RequiredArgsConstructor
 public class MessageUtilsService {
+
+    private static final List<String> emojis = List.of("", "\uD83D\uDE04", "\uD83E\uDD78", "\uD83D\uDE2D", "\uD83E\uDD2C", "\uD83D\uDE2E\u200D\uD83D\uDCA8");
+
 
     public static Map<String, Object> sendMessage(Long chatId, String text) {
 
@@ -104,5 +107,57 @@ public class MessageUtilsService {
         );
     }
 
+    public static Map<String, Object> editCard(Player p, int index) {
+        List<Map<String, Object>> row = new ArrayList<>(
+                List.of(
+                        new HashMap<>(Map.of("text", emojis.get(1), "callback_data", "e1")),
+                        new HashMap<>(Map.of("text", emojis.get(2), "callback_data", "e2")),
+                        new HashMap<>(Map.of("text", emojis.get(3), "callback_data", "e3")),
+                        new HashMap<>(Map.of("text", emojis.get(4), "callback_data", "e4")),
+                        new HashMap<>(Map.of("text", emojis.get(5), "callback_data", "e5"))
+                )
+        );
+
+        if (index != 0) row.set(index-1, new HashMap<>(
+                Map.of(
+                        "text", "\uD83D\uDEAB",
+                        "callback_data", "e0"
+                )
+        ));
+
+        return editMessage(
+                p.getCardI(),
+                p.getId(),
+                listCard(p.getCards()),
+                List.of(row)
+        );
+    }
+
+    public static Map<String, Object> getCard(Player p) {
+        List<List<Map<String, Object>>> keyboard = List.of(
+                List.of(
+                        Map.of("text", emojis.get(1), "callback_data", "e1"),
+                        Map.of("text", emojis.get(2), "callback_data", "e2"),
+                        Map.of("text", emojis.get(3), "callback_data", "e3"),
+                        Map.of("text", emojis.get(4), "callback_data", "e4"),
+                        Map.of("text", emojis.get(5), "callback_data", "e5")
+                )
+        );
+
+        return editMessage(
+                p.getCardI(),
+                p.getId(),
+                listCard(p.getCards()),
+                keyboard
+        );
+    }
+
+    private static String listCard(List<Character> cards) {
+        StringBuilder text = new StringBuilder("▪️ ");
+        for (char c : cards) {
+            text.append(" ").append(c).append(" ");
+        }
+        return text + " ▪️";
+    }
 
 }
