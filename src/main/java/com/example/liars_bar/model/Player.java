@@ -5,7 +5,6 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 @Builder
 @NoArgsConstructor
@@ -37,6 +36,12 @@ public class Player {
 
     @Builder.Default
     private int eM = 0;
+
+    @Builder.Default
+    private int bar = -1;
+
+    @Builder.Default
+    private int cardI = -1;
 
     @Builder.Default
     private Boolean isAlive = true;

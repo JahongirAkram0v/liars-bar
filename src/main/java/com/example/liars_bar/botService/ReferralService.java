@@ -6,6 +6,8 @@ import com.example.liars_bar.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -60,7 +62,16 @@ public class ReferralService {
             }
 
             if (playersSize + 1 == group.getPlayerCount()) {
-                shuffleService.shuffle(group);
+                group.getPlayers().forEach(
+                        p -> sendService.send(
+                                MessageUtilsService.sendMessage(
+                                    p.getId(),
+                                        "Boshlash",
+                                        List.of(List.of( Map.of("text", "⚡️⚡️⚡️", "callback_data", "⚡️")))
+                                ),
+                                "sendMessage"
+                        )
+                );
             }
         }
         else {

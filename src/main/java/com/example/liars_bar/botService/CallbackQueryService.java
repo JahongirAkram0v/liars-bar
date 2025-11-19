@@ -2,8 +2,8 @@ package com.example.liars_bar.botService;
 
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
-import com.example.liars_bar.model.Result;
 import com.example.liars_bar.service.GroupService;
+import com.example.liars_bar.service.PlayerService;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,13 +23,14 @@ public class CallbackQueryService {
     private final String botUsername = dotenv.get("TELEGRAM_BOT_USERNAME");
 
     private final GroupService groupService;
+    private final PlayerService playerService;
     private final SendService sendService;
     private final ShuffleService shuffleService;
     private final GameService gameService;
 
     public void check(String callbackData, Integer messageId, Player player, String callbackQueryId) {
 
-        if (player.getPlayerState().equals(ADD)) {
+        if (player.getPlayerState().equals(ADD) && !callbackData.equals("⚡️")) {
             sendService.send(
                     MessageUtilsService.errorMessage(callbackQueryId),
                     "answerCallbackQuery"
@@ -65,18 +66,40 @@ public class CallbackQueryService {
                     "editMessageText"
             );
         }
+        else if (callbackData.equals("⚡️")) {
+            player.setBar(messageId);
+            playerService.save(player);
+            Group group = player.getGroup();
+
+            int playerCount = (int) group.getPlayers().stream()
+                    .filter(p -> p.getBar() != -1)
+                    .count();
+
+            if (playerCount == group.getPlayerCount()) {
+                shuffleService.shuffle(player.getGroup());
+            } else {
+                sendService.send(
+                        MessageUtilsService.editMessage(
+                                player.getBar(),
+                                player.getId(),
+                                "Kutib turing"
+                        ),
+                        "editMessageText"
+                );
+            }
+        }
         else if (callbackData.startsWith("e")) {
             Group group = player.getGroup();
             int index = callbackData.charAt(1) - '0';
             player.setEM(index);
-            Result result = gameService.getResult(group, player);
+            if (player.getCardI() == -1) player.setCardI(messageId);
+            playerService.save(player);
             group.getPlayers().forEach(
                     p -> sendService.send(
                             MessageUtilsService.editMessage(
-                                    messageId,
+                                    p.getBar(),
                                     p.getId(),
-                                    result.text(),
-                                    result.keyboard()
+                                    gameService.getResult(group, player)
                             ),
                             "editMessageText"
                     )
@@ -171,7 +194,7 @@ public class CallbackQueryService {
                 groupService.delete(group);
                 return;
             }
-
+            if (player.getCardI() == -1) player.setCardI(messageId);
             groupService.save(group);
             shuffleService.shuffle(group);
         }
@@ -187,8 +210,6 @@ public class CallbackQueryService {
                 return;
             }
 
-
-
             List<Character> thrownCards = player.getTemp().stream()
                     .map(i -> player.getCards().get(i))
                     .toList();
@@ -199,27 +220,7 @@ public class CallbackQueryService {
                     playerCards.add(player.getCards().get(i));
                 }
             }
-
-            sendService.send(
-                    MessageUtilsService.editMessage(
-                            messageId,
-                            player.getId(),
-                            "Siz yurgan kartalar: " + thrownCards
-                    ),
-                    "editMessageText"
-            );
-
-            for (Player p: group.getPlayers()) {
-                if (!p.equals(player)) {
-                    sendService.send(
-                            MessageUtilsService.sendMessage(
-                                    p.getId(),
-                                    "♠️x" + player.getTemp().size() + " " + group.getCard()
-                            ),
-                            "sendMessage"
-                    );
-                }
-            }
+            if (player.getCardI() == -1) player.setCardI(messageId);
             player.setCards(playerCards);
             player.setTemp(new ArrayList<>());
             if (player.getCards().isEmpty()) {
@@ -287,7 +288,7 @@ public class CallbackQueryService {
             if (c == card || c == 'J') {
                 correct.append("\uD83D\uDFE9 ");
             } else correct.append("\uD83D\uDFE5 ");
-            cards.append(c).append("    ");
+            cards.append(c).append("     ");
         }
         return cards.toString().trim() + "\n" + correct.toString().trim();
     }

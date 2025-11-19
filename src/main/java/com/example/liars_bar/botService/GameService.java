@@ -2,7 +2,6 @@ package com.example.liars_bar.botService;
 
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
-import com.example.liars_bar.model.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -24,45 +23,41 @@ public class GameService {
 
         Player pTemp = group.getPlayers().get(group.getTurn());
         //bar
-        Result result = getResult(group, pTemp);
-
-        //bar
         group.getPlayers().forEach(
                 p -> sendService.send(
-                        MessageUtilsService.sendMessage(
+                        MessageUtilsService.editMessage(
+                                p.getBar(),
                                 p.getId(),
-                                result.text(),
-                                result.keyboard()
+                                getResult(group, pTemp)
                         ),
-                        "sendMessage"
+                        "editMessageText"
                 )
         );
 
         //current player
-        sendService.send(
-                MessageUtilsService.sendMessage(
-                        pTemp.getId(),
-                        "Sizning yurishingiz",
-                        MessageUtilsService.getBid(pTemp.getCards())
-                ),
-                "sendMessage"
-        );
+        if (pTemp.getCardI() == -1) {
+            sendService.send(
+                    MessageUtilsService.sendMessage(
+                            pTemp.getId(),
+                            "Sizning yurishingiz",
+                            MessageUtilsService.getBid(pTemp.getCards())
+                    ),
+                    "sendMessage"
+            );
+        } else {
+            sendService.send(
+                    MessageUtilsService.editMessage(
+                            pTemp.getCardI(),
+                            pTemp.getId(),
+                            "Sizning yurishingiz",
+                            MessageUtilsService.getBid(pTemp.getCards())
+                    ),
+                    "editMessageText"
+            );
+        }
+
 
         //other players
-        for (Player p: activePlayers) {
-            if (!p.equals(pTemp)) {
-                sendService.send(
-                        MessageUtilsService.sendMessage(
-                                p.getId(),
-                                p.getCards().toString()
-                        ),
-                        "sendMessage"
-                );
-            }
-        }
-    }
-
-    public Result getResult(Group group, Player pTemp) {
         List<List<Map<String, Object>>> keyboard = List.of(
                 List.of(
                         Map.of("text", emojis.get(1), "callback_data", "e"+1),
@@ -72,6 +67,41 @@ public class GameService {
                         Map.of("text", emojis.get(5), "callback_data", "e"+5)
                 )
         );
+        for (Player p: activePlayers) {
+            if (!p.equals(pTemp)) {
+                if (p.getCardI() == -1) {
+                    sendService.send(
+                            MessageUtilsService.sendMessage(
+                                    p.getId(),
+                                    listCard(p.getCards()),
+                                    keyboard
+                            ),
+                            "sendMessage"
+                    );
+                } else {
+                    sendService.send(
+                            MessageUtilsService.editMessage(
+                                    p.getCardI(),
+                                    p.getId(),
+                                    listCard(p.getCards()),
+                                    keyboard
+                            ),
+                            "editMessageText"
+                    );
+                }
+            }
+        }
+    }
+
+    private String listCard(List<Character> cards) {
+        StringBuilder text = new StringBuilder("▪️ ");
+        for (char c : cards) {
+            text.append(" ").append(c).append(" ");
+        }
+        return text + " ▪️";
+    }
+
+    public String getResult(Group group, Player pTemp) {
 
         StringBuilder text = new StringBuilder("\uD83C\uDCCF : " + group.getCard() + "\n" );
         for (Player p: group.getPlayers()) {
@@ -85,7 +115,14 @@ public class GameService {
                     .append(getE(p))
                     .append("\n");
         }
-        return new Result(keyboard, text.toString());
+        if (!group.getThrowCards().isEmpty()) {
+            text.append("\n")
+                    .append("♠️x")
+                    .append(group.getThrowCards().size())
+                    .append(" ")
+                    .append(group.getCard());
+        }
+        return text.toString();
     }
 
     private String getE(Player p) {
