@@ -26,7 +26,7 @@ public class ShuffleService {
             'Q', 'Q', 'Q', 'Q', 'Q', 'Q',
             'J','J');
 
-    public void shuffle(Group group) {
+    public void shuffle(Group group, String[] texts) {
         Collections.shuffle(cards, new Random());
 
         List<Player> activePlayers = group.getPlayers().stream()
@@ -42,11 +42,13 @@ public class ShuffleService {
         for (int i = 0; i < activePlayers.size(); i++) {
             activePlayers.get(i).setCards(cards.subList(5 * i, 5 * (i + 1)));
             activePlayers.get(i).setPlayerState(GAME);
+            activePlayers.get(i).setCard(true);
         }
 
         group.setCard(Arrays.asList('A', 'K', 'Q').get(new Random().nextInt(3)));
 
+        group.setBar(true);
         groupService.save(group);
-        gameService.game(group);
+        gameService.game(group, texts);
     }
 }

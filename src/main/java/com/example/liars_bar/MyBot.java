@@ -106,23 +106,28 @@ public class MyBot extends TelegramWebhookBot {
 
             PlayerState state = player.getPlayerState();
 
+            String textP = "Siz guruhni tark etdingiz";
+            String textG = player.getName() + " guruhni tark etdi";
+
             sendService.send(
                     MessageUtilsService.sendMessage(
                             player.getId(),
-                            "Siz guruhni tark etdingiz"
+                            textP
                     ),
                     "sendMessage"
             );
 
-            for (Player p: group.getPlayers()) {
-                if (!p.equals(player)) {
-                    sendService.send(
-                            MessageUtilsService.sendMessage(
-                                    p.getId(),
-                                    player.getName() + " guruhni tark etdi"
-                            ),
-                            "sendMessage"
-                    );
+            if (state == ADD) {
+                for (Player p: group.getPlayers()) {
+                    if (!p.equals(player)) {
+                        sendService.send(
+                                MessageUtilsService.sendMessage(
+                                        p.getId(),
+                                        textG
+                                ),
+                                "sendMessage"
+                        );
+                    }
                 }
             }
 
@@ -132,7 +137,7 @@ public class MyBot extends TelegramWebhookBot {
                 groupService.delete(group);
             }
             if (state.equals(GAME)) {
-                shuffleService.shuffle(group);
+                shuffleService.shuffle(group, new String[]{"", "", textG});
             }
 
             return null;

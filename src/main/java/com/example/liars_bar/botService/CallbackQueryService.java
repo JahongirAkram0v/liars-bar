@@ -71,12 +71,20 @@ public class CallbackQueryService {
             playerService.save(player);
             Group group = player.getGroup();
 
+            if (group == null) {
+                sendService.send(
+                        MessageUtilsService.errorMessage(callbackQueryId),
+                        "answerCallbackQuery"
+                );
+                return;
+            }
+
             int playerCount = (int) group.getPlayers().stream()
                     .filter(p -> p.getBar() != -1)
                     .count();
 
             if (playerCount == group.getPlayerCount()) {
-                shuffleService.shuffle(player.getGroup());
+                shuffleService.shuffle(group, new String[]{"", "", ""});
             } else {
                 sendService.send(
                         MessageUtilsService.editMessage(
@@ -88,18 +96,49 @@ public class CallbackQueryService {
                 );
             }
         }
+        else if (callbackData.equals("eye")) {
+            player.setCardI(messageId);
+            player.setCard(true);
+            playerService.save(player);
+            Group group = player.getGroup();
+
+            if (group == null) {
+                sendService.send(
+                        MessageUtilsService.errorMessage(callbackQueryId),
+                        "answerCallbackQuery"
+                );
+                return;
+            }
+
+            int playerCount = (int) group.getPlayers().stream()
+                    .filter(p -> p.getCardI() != -1)
+                    .count();
+
+            if (playerCount == group.getPlayerCount()) {
+                gameService.game(group, new String[]{"", "", ""});
+            } else {
+                sendService.send(
+                        MessageUtilsService.editMessage(
+                                player.getCardI(),
+                                player.getId(),
+                                "Kutib turing"
+                        ),
+                        "editMessageText"
+                );
+            }
+        }
         else if (callbackData.startsWith("e")) {
             Group group = player.getGroup();
             int index = callbackData.charAt(1) - '0';
             player.setEM(index);
-            if (player.getCardI() == -1) player.setCardI(messageId);
             playerService.save(player);
+            String result = gameService.getResult(group, player);
             group.getPlayers().forEach(
                     p -> sendService.send(
                             MessageUtilsService.editMessage(
                                     p.getBar(),
                                     p.getId(),
-                                    gameService.getResult(group, player)
+                                    result
                             ),
                             "editMessageText"
                     )
@@ -117,62 +156,27 @@ public class CallbackQueryService {
                 return;
             }
 
-            group.getPlayers().forEach(
-                    p -> sendService.send(
-                            MessageUtilsService.sendMessage(
-                                    p.getId(),
-                                    special(group.getThrowCards(), group.getCard())
-                            ),
-                            "sendMessage"
-                    )
-            );
-
+            String special = special(group.getThrowCards(), group.getCard());
             ///
             boolean isLie = group.getThrowCards().stream()
                     .anyMatch(s -> s != group.getCard() && s != 'J');
             group.setTurn(isLie ? group.getLPI(): group.getTurn());
-            Player p =group.getPlayers().get(group.getTurn());
+            Player p = group.getPlayers().get(group.getTurn());
+
+            String textP;
+            String textG;
+
             if (p.getAttempt() + 1 == p.getChances()) {
                 p.setIsAlive(false);
                 p.setIsActive(false);
 
-                sendService.send(
-                        MessageUtilsService.sendMessage(
-                                p.getId(),
-                                "Siz o'ldingiz."
-                        ),
-                        "sendMessage"
-                );
-
-                for (Player t : group.getPlayers()) {
-                    if (!t.equals(p)) sendService.send(
-                            MessageUtilsService.sendMessage(
-                                    t.getId(),
-                                    p.getName() + " o'ldi."
-                            ),
-                            "sendMessage"
-                    );
-                }
+                textP = "Siz yutqazdingiz.";
+                textG = p.getName() + " yutqazdi.";
             } else {
                 p.setAttempt(p.getAttempt() + 1);
 
-                sendService.send(
-                        MessageUtilsService.sendMessage(
-                                p.getId(),
-                                "Omadingiz bor ekan."
-                        ),
-                        "sendMessage"
-                );
-
-                for (Player t : group.getPlayers()) {
-                    if (!t.equals(p)) sendService.send(
-                            MessageUtilsService.sendMessage(
-                                    t.getId(),
-                                    p.getName() + " omadi bor ekan."
-                            ),
-                            "sendMessage"
-                    );
-                }
+                textP = "Omadingiz bor ekan.";
+                textG = p.getName() + " omadi bor ekan.";
             }
 
             List<Player> activePlayers = new ArrayList<>();
@@ -194,9 +198,8 @@ public class CallbackQueryService {
                 groupService.delete(group);
                 return;
             }
-            if (player.getCardI() == -1) player.setCardI(messageId);
             groupService.save(group);
-            shuffleService.shuffle(group);
+            shuffleService.shuffle(group, new String[]{special, textP, textG});
         }
         else if (callbackData.equals("t")) {
 
@@ -220,7 +223,7 @@ public class CallbackQueryService {
                     playerCards.add(player.getCards().get(i));
                 }
             }
-            if (player.getCardI() == -1) player.setCardI(messageId);
+            player.setCard(true);
             player.setCards(playerCards);
             player.setTemp(new ArrayList<>());
             if (player.getCards().isEmpty()) {
@@ -228,11 +231,15 @@ public class CallbackQueryService {
             }
 
             group.setThrowCards(thrownCards);
-            group.setTurn(groupService.index(group));
+            int index = groupService.index(group);
+            group.setTurn(index);
+            Player p = group.getPlayers().get(index);
+            p.setCard(true);
             group.setLPI(player.getPlayerIndex());
+            group.setBar(true);
             groupService.save(group);
 
-            gameService.game(group);
+            gameService.game(group, new String[]{"", "", ""});
         }
         else {
             Group group = player.getGroup();
@@ -254,8 +261,8 @@ public class CallbackQueryService {
             if (!temp.remove(Integer.valueOf(c))) {
                 temp.add(c);
             }
+            player.setCard(true);
             player.setTemp(temp);
-
             groupService.save(group);
 
             Map<String, Object> message = MessageUtilsService.editMessage(
@@ -286,10 +293,10 @@ public class CallbackQueryService {
         StringBuilder correct = new StringBuilder();
         for (char c : throwCards) {
             if (c == card || c == 'J') {
-                correct.append("\uD83D\uDFE9 ");
-            } else correct.append("\uD83D\uDFE5 ");
-            cards.append(c).append("     ");
+                correct.append("\uD83D\uDFE9");
+            } else correct.append("\uD83D\uDFE5");
+            cards.append(" ").append(c).append(" ");
         }
-        return cards.toString().trim() + "\n" + correct.toString().trim();
+        return cards + "\n" + correct;
     }
 }
