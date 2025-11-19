@@ -115,7 +115,7 @@ public class CallbackQueryService {
                     .count();
 
             if (playerCount == group.getPlayerCount()) {
-                gameService.game(group, new String[]{"", "", ""});
+                gameService.game(group, new String[]{"", ""});
             } else {
                 sendService.send(
                         MessageUtilsService.editMessage(
@@ -250,7 +250,7 @@ public class CallbackQueryService {
             group.setBar(true);
             groupService.save(group);
 
-            gameService.game(group, new String[]{"", "", ""});
+            gameService.game(group, new String[]{"", ""});
         }
         else {
             Group group = player.getGroup();
