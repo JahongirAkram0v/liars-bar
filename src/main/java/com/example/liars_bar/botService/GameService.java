@@ -75,7 +75,7 @@ public class GameService {
         for (Player p: activePlayers) {
             if (!p.equals(pTemp) && p.isCard()) {
                 sendService.send(
-                        MessageUtilsService.getCard(p),
+                        MessageUtilsService.editCard(p, p.getEM()),
                         "editMessageText"
                 );
             }

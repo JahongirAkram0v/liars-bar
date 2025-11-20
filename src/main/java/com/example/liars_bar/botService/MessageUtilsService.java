@@ -133,25 +133,6 @@ public class MessageUtilsService {
         );
     }
 
-    public static Map<String, Object> getCard(Player p) {
-        List<List<Map<String, Object>>> keyboard = List.of(
-                List.of(
-                        Map.of("text", emojis.get(1), "callback_data", "e1"),
-                        Map.of("text", emojis.get(2), "callback_data", "e2"),
-                        Map.of("text", emojis.get(3), "callback_data", "e3"),
-                        Map.of("text", emojis.get(4), "callback_data", "e4"),
-                        Map.of("text", emojis.get(5), "callback_data", "e5")
-                )
-        );
-
-        return editMessage(
-                p.getCardI(),
-                p.getId(),
-                listCard(p.getCards()),
-                keyboard
-        );
-    }
-
     private static String listCard(List<Character> cards) {
         StringBuilder text = new StringBuilder("▪️ ");
         for (char c : cards) {
