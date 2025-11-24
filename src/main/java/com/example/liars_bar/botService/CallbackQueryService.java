@@ -129,10 +129,21 @@ public class CallbackQueryService {
         }
         else if (callbackData.startsWith("e")) {
             Group group = player.getGroup();
+
+            if (group.getTurn() == player.getPlayerIndex()) {
+                return;
+            }
+
             int index = callbackData.charAt(1) - '0';
             player.setEM(index);
             playerService.save(player);
             String result = gameService.getResult(group, player);
+
+            sendService.send(
+                    MessageUtilsService.editCard(player, index),
+                    "editMessageText"
+            );
+
             group.getPlayers().forEach(
                     p -> sendService.send(
                             MessageUtilsService.editMessage(
@@ -142,10 +153,6 @@ public class CallbackQueryService {
                             ),
                             "editMessageText"
                     )
-            );
-            sendService.send(
-                    MessageUtilsService.editCard(player, index),
-                    "editMessageText"
             );
 
         }
