@@ -137,7 +137,7 @@ public class CallbackQueryService {
             int index = callbackData.charAt(1) - '0';
             player.setEM(index);
             playerService.save(player);
-            String result = gameService.getResult(group, player);
+            String result = gameService.getResult(group, group.getPlayers().get(group.getTurn()));
 
             sendService.send(
                     MessageUtilsService.editCard(player, index),
