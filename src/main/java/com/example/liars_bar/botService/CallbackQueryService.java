@@ -244,12 +244,17 @@ public class CallbackQueryService {
             player.setCard(true);
             player.setCards(playerCards);
             player.setTemp(new ArrayList<>());
+
+            int index = groupService.index(group);
             if (player.getCards().isEmpty()) {
                 player.setIsActive(false);
+                sendService.send(
+                        MessageUtilsService.editCard(player, index),
+                        "editMessageText"
+                );
             }
 
             group.setThrowCards(thrownCards);
-            int index = groupService.index(group);
             group.setTurn(index);
             Player p = group.getPlayers().get(index);
             p.setCard(true);
