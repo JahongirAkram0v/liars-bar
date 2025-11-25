@@ -133,6 +133,13 @@ public class MessageUtilsService {
         );
     }
 
+    public static Map<String, Object> action(Long id) {
+        return Map.of(
+                "chat_id", id,
+                "action", "typing"
+        );
+    }
+
     private static String listCard(List<Character> cards) {
         StringBuilder text = new StringBuilder("▪️ ");
         for (char c : cards) {

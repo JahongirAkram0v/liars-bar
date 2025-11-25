@@ -27,6 +27,14 @@ public class GameService {
                 .toList();
 
         Player pTemp = group.getPlayers().get(group.getTurn());
+
+        group.getPlayers().forEach(
+                p -> sendService.send(
+                        MessageUtilsService.action(p.getId()),
+                        "sendChatAction"
+                )
+        );
+
         //bar
         String extra = texts[0] + "\n" +texts[1];
 
