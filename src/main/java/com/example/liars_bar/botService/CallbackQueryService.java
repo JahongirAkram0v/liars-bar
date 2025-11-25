@@ -249,7 +249,11 @@ public class CallbackQueryService {
             if (player.getCards().isEmpty()) {
                 player.setIsActive(false);
                 sendService.send(
-                        MessageUtilsService.editCard(player, index),
+                        MessageUtilsService.editMessage(
+                                player.getCardI(),
+                                player.getId(),
+                                "Sizda karta qolmadi, o'yinni kuzating."
+                        ),
                         "editMessageText"
                 );
             }
