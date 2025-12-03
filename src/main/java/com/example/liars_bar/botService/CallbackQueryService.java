@@ -43,9 +43,10 @@ public class CallbackQueryService {
             Group group = new Group();
             group.setPlayerCount(count);
             player.setChances(new Random().nextInt(6) + 1);
+            player.setPlayerIndex(group.getTurn());
             player.setPlayerState(ADD);
             player.setGroup(group);
-
+            group.setTurn(group.getTurn() + 1);
             sendService.send(
                     MessageUtilsService.sendMessage(
                             player.getId(),

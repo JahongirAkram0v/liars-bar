@@ -19,7 +19,6 @@ public class ReferralService {
 
     private final GroupService groupService;
     private final SendService sendService;
-    private final ShuffleService shuffleService;
 
     public Optional<Group> isReferral(String text) {
         if (text == null || text.length() <= 7) {
@@ -53,7 +52,12 @@ public class ReferralService {
             }
 
             if (playersSize + 1 == group.getPlayerCount()) {
-                group.setTurn(groupService.index(group));
+                group.setTurn(group.getPlayers().stream()
+                        .mapToInt(Player::getPlayerIndex)
+                        .min()
+                        .orElse(0)
+                );
+                groupService.save(group);
                 group.getPlayers().forEach(
                         p -> sendService.send(
                                 MessageUtilsService.sendMessage(
