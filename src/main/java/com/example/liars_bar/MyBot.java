@@ -90,7 +90,6 @@ public class MyBot extends TelegramWebhookBot {
 
             Group group = player.getGroup();
             if (group == null) return null;
-            extracted(id);
 
             PlayerState state = player.getPlayerState();
 

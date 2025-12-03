@@ -6,10 +6,7 @@ import com.example.liars_bar.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 import static com.example.liars_bar.model.PlayerState.ADD;
 
@@ -34,11 +31,10 @@ public class ReferralService {
 
         if (playersSize < group.getPlayerCount()) {
             player.setChances(new Random().nextInt(6) + 1);
-            player.setPlayerIndex(group.getTurn());
+            player.setPlayerIndex(findIndex(group));
             player.setPlayerState(ADD);
             player.setGroup(group);
             group.getPlayers().add(player);
-            group.setTurn(group.getTurn() + 1);
             groupService.save(group);
 
             for (Player p: group.getPlayers()) {
@@ -52,12 +48,6 @@ public class ReferralService {
             }
 
             if (playersSize + 1 == group.getPlayerCount()) {
-                group.setTurn(group.getPlayers().stream()
-                        .mapToInt(Player::getPlayerIndex)
-                        .min()
-                        .orElse(0)
-                );
-                groupService.save(group);
                 group.getPlayers().forEach(
                         p -> sendService.send(
                                 MessageUtilsService.sendMessage(
@@ -70,5 +60,19 @@ public class ReferralService {
                 );
             }
         }
+    }
+
+    public int findIndex(Group group) {
+
+        List<Integer> indices = group.getPlayers().stream()
+                .map(Player::getPlayerIndex)
+                .toList();
+
+        for (int i = 0; i < 4; i++) {
+            if (!indices.contains(i)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

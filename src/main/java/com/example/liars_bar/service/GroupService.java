@@ -35,9 +35,10 @@ public class GroupService {
                 .map(Player::getPlayerIndex)
                 .toList();
 
-        for (int i: indices) {
-            if (group.getTurn() < i) return i;
+        if (indices.contains(group.getTurn() + 1)) {
+            return group.getTurn() + 1;
         }
+
         return indices.getFirst();
     }
 }
