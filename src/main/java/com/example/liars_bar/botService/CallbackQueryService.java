@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Random;
 
 import static com.example.liars_bar.model.PlayerState.ADD;
+import static com.example.liars_bar.model.PlayerState.GAME;
 
 @Component
 @RequiredArgsConstructor
@@ -29,14 +30,6 @@ public class CallbackQueryService {
     private final GameService gameService;
 
     public void check(String callbackData, Integer messageId, Player player, String callbackQueryId) {
-
-        if (player.getPlayerState().equals(ADD) && !callbackData.equals("⚡️")) {
-            sendService.send(
-                    MessageUtilsService.errorMessage(callbackQueryId),
-                    "answerCallbackQuery"
-            );
-            return;
-        }
 
         if (callbackData.startsWith("c ")) {
             int count = callbackData.charAt(2) - '0';
@@ -67,55 +60,63 @@ public class CallbackQueryService {
             );
         }
         else if (callbackData.equals("⚡️")) {
-            player.setBar(messageId);
-            playerService.save(player);
-            Group group = player.getGroup();
-
-            if (group == null) {
+            if (player.getPlayerState() != ADD) {
                 sendService.send(
                         MessageUtilsService.errorMessage(callbackQueryId),
                         "answerCallbackQuery"
                 );
                 return;
             }
+
+            player.setBar(messageId);
+            playerService.save(player);
+            Group group = player.getGroup();
 
             int playerCount = (int) group.getPlayers().stream()
                     .filter(p -> p.getBar() != -1)
                     .count();
 
+            sendService.send(
+                    MessageUtilsService.editMessage(
+                            player.getBar(),
+                            player.getId(),
+                            "Kutib turing"
+                    ),
+                    "editMessageText"
+            );
+
             if (playerCount == group.getPlayerCount()) {
-                shuffleService.shuffle(group, new String[]{"", ""});
-            } else {
-                sendService.send(
-                        MessageUtilsService.editMessage(
-                                player.getBar(),
-                                player.getId(),
-                                "Kutib turing"
-                        ),
-                        "editMessageText"
+                group.getPlayers().forEach(
+                        p -> sendService.send(
+                                MessageUtilsService.sendMessage(
+                                        p.getId(),
+                                        "Iltimos bosing.",
+                                        List.of(List.of( Map.of("text", "❇️", "callback_data", "eye")))
+                                ),
+                                "sendMessage"
+                        )
                 );
             }
         }
         else if (callbackData.equals("eye")) {
-            player.setCardI(messageId);
-            player.setCard(true);
-            playerService.save(player);
-            Group group = player.getGroup();
-
-            if (group == null) {
+            if (player.getPlayerState() != ADD) {
                 sendService.send(
                         MessageUtilsService.errorMessage(callbackQueryId),
                         "answerCallbackQuery"
                 );
                 return;
             }
+            player.setCardI(messageId);
+            player.setCard(true);
+            playerService.save(player);
+            Group group = player.getGroup();
 
             int playerCount = (int) group.getPlayers().stream()
                     .filter(p -> p.getCardI() != -1)
                     .count();
 
             if (playerCount == group.getPlayerCount()) {
-                gameService.game(group, new String[]{"", ""});
+                shuffleService.shuffle(group, new String[]{"", ""});
             } else {
                 sendService.send(
                         MessageUtilsService.editMessage(
@@ -160,7 +161,7 @@ public class CallbackQueryService {
 
             Group group = player.getGroup();
 
-            if (group.getThrowCards().isEmpty()) {
+            if (player.getPlayerState() != GAME || group.getThrowCards().isEmpty()) {
                 sendService.send(
                         MessageUtilsService.errorMessage(callbackQueryId),
                         "answerCallbackQuery"
@@ -220,16 +221,14 @@ public class CallbackQueryService {
             shuffleService.shuffle(group, new String[]{special, textG});
         }
         else if (callbackData.equals("t")) {
-
-            Group group = player.getGroup();
-
-            if (player.getTemp().isEmpty()) {
+            if (player.getTemp().isEmpty() || player.getPlayerState() != GAME) {
                 sendService.send(
                         MessageUtilsService.errorMessage(callbackQueryId),
                         "answerCallbackQuery"
                 );
                 return;
             }
+            Group group = player.getGroup();
 
             List<Character> thrownCards = player.getTemp().stream()
                     .map(i -> player.getCards().get(i))
@@ -269,9 +268,7 @@ public class CallbackQueryService {
             gameService.game(group, new String[]{"", ""});
         }
         else {
-            Group group = player.getGroup();
-
-            if (group == null) {
+            if (player.getPlayerState() != GAME) {
                 sendService.send(
                         MessageUtilsService.errorMessage(callbackQueryId),
                         "answerCallbackQuery"
@@ -279,6 +276,7 @@ public class CallbackQueryService {
                 return;
             }
 
+            Group group = player.getGroup();
             List<Player> activePlayers = group.getPlayers().stream()
                     .filter(p -> p.getIsActive() && p.getIsAlive())
                     .toList();
