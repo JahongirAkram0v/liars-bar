@@ -39,11 +39,11 @@ public class MyBot extends TelegramWebhookBot {
         if (update.hasCallbackQuery()) {
 
             String callbackData = update.getCallbackQuery().getData();
-            Long currentPlayerId = update.getCallbackQuery().getMessage().getChatId();
+            Long id = update.getCallbackQuery().getMessage().getChatId();
             Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
             String callbackQueryId = update.getCallbackQuery().getId();
 
-            Optional<Player> optionalPlayer = playerService.findById(currentPlayerId);
+            Optional<Player> optionalPlayer = playerService.findById(id);
             if (optionalPlayer.isEmpty()) {
                 sendService.send(
                         MessageUtilsService.errorMessage(callbackQueryId),
@@ -64,70 +64,45 @@ public class MyBot extends TelegramWebhookBot {
 
         Message message = update.getMessage();
         String text = message.getText();
-        Long currentPlayerId = message.getChatId();
+        Long id = message.getChatId();
         String name = message.getFrom().getFirstName();
 
-        Player player = playerService.findById(currentPlayerId)
-                .orElseGet(() -> Player.builder()
-                        .id(currentPlayerId)
-                        .name(firstNCodePoints(name))
-                        .build());
-        playerService.save(player);
+        Player player = playerService.findById(id)
+                .orElseGet(() -> {
+                    Player p = Player.builder()
+                            .id(id)
+                            .name(firstNCodePoints(name))
+                            .build();
+                    playerService.save(p);
+                    return p;
+                });
 
-        if (player.getPlayerState().equals(START) && text.startsWith("/start ")) {
-
-            Optional<Group> optionalGroup = referralService.isReferral(text);
-            if (optionalGroup.isPresent()) {
-                referralService.referral(player, optionalGroup.get());
-            } else {
-                extracted(currentPlayerId);
-            }
-            return null;
-        }
-
-        if (player.getPlayerState().equals(START) && text.equals("/start")) {
-            extracted(currentPlayerId);
+        if (player.getPlayerState().equals(START) && text.startsWith("/start")) {
+            referralService.isReferral(text)
+                    .ifPresentOrElse(
+                            group -> referralService.referral(player, group),
+                            () -> extracted(id)
+                    );
             return null;
         }
 
         if (text.equals("/quit")) {
 
             Group group = player.getGroup();
-            if (group == null) {
-                sendService.send(
-                        MessageUtilsService.sendMessage(
-                                player.getId(),
-                                "Siz hech qanday guruhda emassiz"
-                        ),
-                        "sendMessage"
-                );
-                return null;
-            }
+            if (group == null) return null;
+            extracted(id);
 
             PlayerState state = player.getPlayerState();
 
-            String textP = "Siz guruhni tark etdingiz";
-            String textG = player.getName() + " guruhni tark etdi";
-
-            sendService.send(
-                    MessageUtilsService.sendMessage(
-                            player.getId(),
-                            textP
-                    ),
-                    "sendMessage"
-            );
-
             if (state == ADD) {
                 for (Player p: group.getPlayers()) {
-                    if (!p.equals(player)) {
-                        sendService.send(
-                                MessageUtilsService.sendMessage(
-                                        p.getId(),
-                                        textG
-                                ),
-                                "sendMessage"
-                        );
-                    }
+                    sendService.send(
+                            MessageUtilsService.sendMessage(
+                                    p.getId(),
+                                    player.getName() + " guruhni tark etdi"
+                            ),
+                            "sendMessage"
+                    );
                 }
             }
 
@@ -137,7 +112,7 @@ public class MyBot extends TelegramWebhookBot {
                 groupService.delete(group);
             }
             if (state.equals(GAME)) {
-                shuffleService.shuffle(group, new String[]{"", textG});
+                shuffleService.shuffle(group, new String[]{"", ""});
             }
 
             return null;
@@ -146,9 +121,9 @@ public class MyBot extends TelegramWebhookBot {
         return null;
     }
 
-    private void extracted(Long currentPlayerId) {
+    private void extracted(Long id) {
         sendService.send(
-                MessageUtilsService.start(currentPlayerId),
+                MessageUtilsService.start(id),
                 "sendMessage"
         );
     }

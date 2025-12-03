@@ -31,5 +31,6 @@ public class Group {
     @Builder.Default
     private List<Character> throwCards = new ArrayList<>();
     private int playerCount;
+    @Builder.Default
     private int turn = 0;
 }

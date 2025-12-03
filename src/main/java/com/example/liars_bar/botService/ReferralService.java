@@ -35,33 +35,25 @@ public class ReferralService {
 
         if (playersSize < group.getPlayerCount()) {
             player.setChances(new Random().nextInt(6) + 1);
-            player.setPlayerIndex(playersSize);
+            player.setPlayerIndex(group.getTurn());
             player.setPlayerState(ADD);
             player.setGroup(group);
             group.getPlayers().add(player);
+            group.setTurn(group.getTurn() + 1);
             groupService.save(group);
 
-            sendService.send(
-                    MessageUtilsService.sendMessage(
-                            player.getId(),
-                            "Siz guruhga qo'shildingiz."
-                    ),
-                    "sendMessage"
-            );
-
             for (Player p: group.getPlayers()) {
-                if (!p.equals(player)) {
-                    sendService.send(
-                            MessageUtilsService.sendMessage(
-                                    p.getId(),
-                                    player.getName() + " guruhga qo'shildi."
-                            ),
-                            "sendMessage"
-                    );
-                }
+                sendService.send(
+                        MessageUtilsService.sendMessage(
+                                p.getId(),
+                                player.getName() + " guruhga qo'shildi."
+                        ),
+                        "sendMessage"
+                );
             }
 
             if (playersSize + 1 == group.getPlayerCount()) {
+                group.setTurn(groupService.index(group));
                 group.getPlayers().forEach(
                         p -> sendService.send(
                                 MessageUtilsService.sendMessage(
@@ -73,15 +65,6 @@ public class ReferralService {
                         )
                 );
             }
-        }
-        else {
-            sendService.send(
-                    MessageUtilsService.sendMessage(
-                            player.getId(),
-                            "Guruh to'lgan. Yangi guruh yaratish uchun /start buyrug'ini bosing"
-                    ),
-                    "sendMessage"
-            );
         }
     }
 }
