@@ -107,7 +107,6 @@ public class CallbackQueryService {
                 return;
             }
             player.setCardI(messageId);
-            player.setCard(true);
             playerService.save(player);
             Group group = player.getGroup();
 
@@ -116,7 +115,7 @@ public class CallbackQueryService {
                     .count();
 
             if (playerCount == group.getPlayerCount()) {
-                shuffleService.shuffle(group, new String[]{"", ""});
+                shuffleService.shuffle(group, "");
             } else {
                 sendService.send(
                         MessageUtilsService.editMessage(
@@ -218,7 +217,7 @@ public class CallbackQueryService {
                 return;
             }
             groupService.save(group);
-            shuffleService.shuffle(group, new String[]{special, textG});
+            shuffleService.shuffle(group, special + "\n" + textG);
         }
         else if (callbackData.equals("t")) {
             if (player.getTemp().isEmpty() || player.getPlayerState() != GAME) {
@@ -240,7 +239,6 @@ public class CallbackQueryService {
                     playerCards.add(player.getCards().get(i));
                 }
             }
-            player.setCard(true);
             player.setCards(playerCards);
             player.setTemp(new ArrayList<>());
 
@@ -259,13 +257,10 @@ public class CallbackQueryService {
 
             group.setThrowCards(thrownCards);
             group.setTurn(index);
-            Player p = group.getPlayers().get(index);
-            p.setCard(true);
             group.setLPI(player.getPlayerIndex());
-            group.setBar(true);
             groupService.save(group);
 
-            gameService.game(group, new String[]{"", ""});
+            gameService.game(group, "");
         }
         else {
             if (player.getPlayerState() != GAME) {
@@ -294,7 +289,6 @@ public class CallbackQueryService {
             if (!temp.remove(Integer.valueOf(c))) {
                 temp.add(c);
             }
-            player.setCard(true);
             player.setTemp(temp);
             groupService.save(group);
 

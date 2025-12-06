@@ -17,11 +17,7 @@ public class GameService {
     private final GroupService groupService;
     private final List<String> emojis = List.of("", "\uD83D\uDE04", "\uD83E\uDD78", "\uD83D\uDE2D", "\uD83E\uDD2C", "\uD83D\uDE2E\u200D\uD83D\uDCA8");
 
-    public void game(Group group, String[] texts) {
-
-        List<Player> activePlayers = group.getPlayers().stream()
-                .filter(player -> player.getIsActive() && player.getIsAlive())
-                .toList();
+    public void game(Group group, String texts) {
 
         Player pTemp = group.getPlayers().get(group.getTurn());
 
@@ -33,51 +29,37 @@ public class GameService {
         );
 
         //bar
-        String extra = texts[0] + "\n" +texts[1];
-
-        if (group.isBar()) {
-            group.getPlayers().forEach(
-                    p -> sendService.send(
-                            MessageUtilsService.editMessage(
-                                    p.getBar(),
-                                    p.getId(),
-                                    getResult(group, pTemp) + "\n\n" + (extra.trim())
-                            ),
-                            "editMessageText"
-                    )
-            );
-        }
+        group.getPlayers().forEach(
+                p -> sendService.send(
+                        MessageUtilsService.editMessage(
+                                p.getBar(),
+                                p.getId(),
+                                getResult(group, pTemp) + "\n\n" + texts
+                        ),
+                        "editMessageText"
+                )
+        );
 
         //current player
-        if (pTemp.isCard()) {
+        sendService.send(
+                MessageUtilsService.editMessage(
+                        pTemp.getCardI(),
+                        pTemp.getId(),
+                        "Sizning yurishingiz",
+                        MessageUtilsService.getBid(pTemp.getCards())
+                ),
+                "editMessageText"
+        );
+
+        //last players
+        Player lastPlayer = group.getPlayers().get(group.getLPI());
+        if (lastPlayer.getIsActive() && lastPlayer.getIsAlive()) {
             sendService.send(
-                    MessageUtilsService.editMessage(
-                            pTemp.getCardI(),
-                            pTemp.getId(),
-                            "Sizning yurishingiz",
-                            MessageUtilsService.getBid(pTemp.getCards())
-                    ),
+                    MessageUtilsService.editCard(lastPlayer, lastPlayer.getEM()),
                     "editMessageText"
             );
         }
 
-        //other players
-        for (Player p: activePlayers) {
-            if (!p.equals(pTemp) && p.isCard()) {
-                sendService.send(
-                        MessageUtilsService.editCard(p, p.getEM()),
-                        "editMessageText"
-                );
-            }
-        }
-
-        group.setBar(false);
-        List<Player> players = new ArrayList<>();
-        for (Player p: group.getPlayers()) {
-            p.setCard(false);
-            players.add(p);
-        }
-        group.setPlayers(players);
         groupService.save(group);
     }
 

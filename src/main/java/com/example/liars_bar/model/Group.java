@@ -24,9 +24,6 @@ public class Group {
     private List<Player> players = new ArrayList<>();
     private int lPI;
 
-    @Builder.Default
-    private boolean bar = false;
-
     private Character Card;
     @Builder.Default
     private List<Character> throwCards = new ArrayList<>();

@@ -19,6 +19,7 @@ public class ShuffleService {
 
     private final GroupService groupService;
     private final GameService gameService;
+    private final SendService sendService;
 
     private final List<Character> cards = Arrays.asList(
             'A', 'A', 'A', 'A', 'A', 'A',
@@ -26,7 +27,7 @@ public class ShuffleService {
             'Q', 'Q', 'Q', 'Q', 'Q', 'Q',
             'J','J');
 
-    public void shuffle(Group group, String[] texts) {
+    public void shuffle(Group group, String texts) {
         Collections.shuffle(cards, new Random());
 
         List<Player> activePlayers = group.getPlayers().stream()
@@ -42,13 +43,52 @@ public class ShuffleService {
         for (int i = 0; i < activePlayers.size(); i++) {
             activePlayers.get(i).setCards(cards.subList(5 * i, 5 * (i + 1)));
             activePlayers.get(i).setPlayerState(GAME);
-            activePlayers.get(i).setCard(true);
         }
 
         group.setCard(Arrays.asList('A', 'K', 'Q').get(new Random().nextInt(3)));
 
-        group.setBar(true);
+        Player pTemp = group.getPlayers().getFirst();
+
+        group.getPlayers().forEach(
+                p -> sendService.send(
+                        MessageUtilsService.action(p.getId()),
+                        "sendChatAction"
+                )
+        );
+
+        //bar
+        group.getPlayers().forEach(
+                p -> sendService.send(
+                        MessageUtilsService.editMessage(
+                                p.getBar(),
+                                p.getId(),
+                                gameService.getResult(group, pTemp) + "\n\n" + texts
+                        ),
+                        "editMessageText"
+                )
+        );
+
+        //current player
+        sendService.send(
+                MessageUtilsService.editMessage(
+                        pTemp.getCardI(),
+                        pTemp.getId(),
+                        "Sizning yurishingiz",
+                        MessageUtilsService.getBid(pTemp.getCards())
+                ),
+                "editMessageText"
+        );
+
+        //last players
+        for (Player p: activePlayers) {
+            if (!p.equals(pTemp)) {
+                sendService.send(
+                        MessageUtilsService.editCard(p, p.getEM()),
+                        "editMessageText"
+                );
+            }
+        }
+
         groupService.save(group);
-        gameService.game(group, texts);
     }
 }

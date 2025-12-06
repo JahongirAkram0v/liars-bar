@@ -44,9 +44,6 @@ public class Player {
     private int cardI = -1;
 
     @Builder.Default
-    private boolean card = false;
-
-    @Builder.Default
     private Boolean isAlive = true;
 
     @Builder.Default
