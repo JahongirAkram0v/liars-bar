@@ -1,16 +1,16 @@
 package com.example.liars_bar;
 
 import com.example.liars_bar.botService.*;
-import com.example.liars_bar.model.Group;
-import com.example.liars_bar.model.Player;
-import com.example.liars_bar.model.PlayerState;
-import com.example.liars_bar.service.GroupService;
+import com.example.liars_bar.model.*;
+import com.example.liars_bar.rabbitmqService.AnswerProducer;
+import com.example.liars_bar.rabbitmqService.Producer;
 import com.example.liars_bar.service.PlayerService;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -27,104 +27,78 @@ public class MyBot extends TelegramWebhookBot {
     private final String botWebhookPath = dotenv.get("TELEGRAM_BOT_WEBHOOK_PATH");
 
     private final PlayerService playerService;
-    private final GroupService groupService;
-    private final ReferralService referralService;
-    private final SendService sendService;
-    private final CallbackQueryService callbackService;
-    private final ShuffleService shuffleService;
+
+    private final Producer producer;
+    private final AnswerProducer answerProducer;
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
 
         if (update.hasCallbackQuery()) {
+            CallbackQuery callbackQuery = update.getCallbackQuery();
 
-            String callbackData = update.getCallbackQuery().getData();
-            Long id = update.getCallbackQuery().getMessage().getChatId();
-            Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
-            String callbackQueryId = update.getCallbackQuery().getId();
+            Long id = callbackQuery.getMessage().getChatId();
+            String command = callbackQuery.getData();
+            Integer messageId = callbackQuery.getMessage().getMessageId();
+
+            String callbackQueryId = callbackQuery.getId();
 
             Optional<Player> optionalPlayer = playerService.findById(id);
             if (optionalPlayer.isEmpty()) {
-                sendService.send(
-                        MessageUtilsService.errorMessage(callbackQueryId),
-                        "answerCallbackQuery"
-                );
+                answerProducer.response(Utils.error(callbackQueryId, "Press /start"));
                 return null;
             }
             Player player = optionalPlayer.get();
+            PlayerState state = player.getPlayerState();
 
-            callbackService.check(callbackData, messageId, player, callbackQueryId);
-
-            return null;
+//            if (state == START) {
+//                answerProducer.response(Utils.error(callbackQueryId, "You are not in a game"));
+//                return null;
+//            }
+            Request request = new Request(player, command, messageId);
+            producer.request(request);
         }
 
-        if (!update.hasMessage() || !update.getMessage().isCommand()) {
-            return null;
-        }
+        if (update.hasMessage() && update.getMessage().isCommand()) {
+            Message message = update.getMessage();
+            String command = message.getText();
+            Long id = message.getChatId();
 
-        Message message = update.getMessage();
-        String text = message.getText();
-        Long id = message.getChatId();
-        String name = message.getFrom().getFirstName();
+            String name = message.getFrom().getFirstName();
 
-        Player player = playerService.findById(id)
-                .orElseGet(() -> {
-                    Player p = Player.builder()
-                            .id(id)
-                            .name(firstNCodePoints(name))
-                            .build();
-                    playerService.save(p);
-                    return p;
-                });
+            Player player = playerService.findById(id)
+                    .orElseGet(() -> {
+                        Player p = Player.builder()
+                                .id(id)
+                                .name(firstNCodePoints(name))
+                                .build();
+                        playerService.save(p);
+                        return p;
+                    });
 
-        if (player.getPlayerState().equals(START) && text.startsWith("/start")) {
-            referralService.isReferral(text)
-                    .ifPresentOrElse(
-                            group -> referralService.referral(player, group),
-                            () -> extracted(id)
-                    );
-            return null;
-        }
-
-        if (text.equals("/quit")) {
-
-            Group group = player.getGroup();
-            if (group == null) return null;
+            if (!player.getName().equals(name)) {
+                player.setName(firstNCodePoints(name));
+                playerService.save(player);
+            }
 
             PlayerState state = player.getPlayerState();
 
-            if (state == ADD) {
-                for (Player p: group.getPlayers()) {
-                    sendService.send(
-                            MessageUtilsService.sendMessage(
-                                    p.getId(),
-                                    player.getName() + " guruhni tark etdi"
-                            ),
-                            "sendMessage"
-                    );
-                }
+            if (state == START && command.startsWith("/start")) {
+                producer.request(new Request(player, command, -1));
+                return null;
             }
-
-            group.getPlayers().remove(player);
-            playerService.delete(player);
-            if (group.getPlayers().isEmpty()) {
-                groupService.delete(group);
+            if (state == ADD && command.equals("/quit")) {
+                producer.request(new Request(player, "exit", -1));
+                return null;
             }
-            if (state.equals(GAME)) {
-                shuffleService.shuffle(group, "");
+            if (state == GAME && command.equals("/quit")) {
+                producer.request(new Request(player, "quit", -1));
+                return null;
             }
-
             return null;
         }
 
         return null;
-    }
-
-    private void extracted(Long id) {
-        sendService.send(
-                MessageUtilsService.start(id),
-                "sendMessage"
-        );
     }
 
     private static String firstNCodePoints(String s) {

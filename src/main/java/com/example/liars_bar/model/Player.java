@@ -12,19 +12,31 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@Table(name = "player")
 public class Player {
 
     @Id
     private Long id;
-    private int playerIndex;
+    //
+    @Column(length = 30)
     private String name;
-    private int chances;
-
+    //
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private PlayerState playerState = PlayerState.START;
+    //
+    @OneToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+    //
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
 
-    @OrderColumn(name = "cards_index")
+    private int playerIndex;
+
+    private int chances;
+
     @Builder.Default
     private List<Character> cards = new ArrayList<>();
 
@@ -41,7 +53,10 @@ public class Player {
     private int bar = -1;
 
     @Builder.Default
-    private int cardI = -1;
+    private int card = -1;
+
+    @Builder.Default
+    private Boolean c = true;
 
     @Builder.Default
     private Boolean isAlive = true;
@@ -49,7 +64,4 @@ public class Player {
     @Builder.Default
     private Boolean isActive = true;
 
-    @ManyToOne
-    @JoinColumn(name = "group_id")
-    private Group group;
 }

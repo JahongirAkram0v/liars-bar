@@ -11,7 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@Entity(name = "_group")
+@Entity
+@Table(name = "_group")
 public class Group {
 
     @Id
@@ -27,7 +28,7 @@ public class Group {
     private Character Card;
     @Builder.Default
     private List<Character> throwCards = new ArrayList<>();
-    private int playerCount;
+    private int pC;
     @Builder.Default
     private int turn = 0;
 }

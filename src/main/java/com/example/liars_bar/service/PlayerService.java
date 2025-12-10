@@ -24,4 +24,8 @@ public class PlayerService {
     public void delete(Player player) {
         playerRepo.delete(player);
     }
+
+    public void reset(Long id) {
+        save(Player.builder().id(id).build());
+    }
 }

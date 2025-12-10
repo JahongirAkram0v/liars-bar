@@ -1,0 +1,49 @@
+package com.example.liars_bar.command;
+
+import com.example.liars_bar.botService.Utils;
+import com.example.liars_bar.model.Group;
+import com.example.liars_bar.model.Player;
+import com.example.liars_bar.rabbitmqService.AnswerProducer;
+import com.example.liars_bar.service.PlayerService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
+
+@Component
+@RequiredArgsConstructor
+public class BarCommand {
+
+    private final AnswerProducer answerProducer;
+    private final PlayerService playerService;
+
+
+    public void execute(Player player, int messageId) {
+        player.setBar(messageId);
+        playerService.save(player);
+        Group group = player.getGroup();
+
+        int pC = (int) group.getPlayers().stream()
+                .filter(p -> p.getBar() != -1)
+                .count();
+
+        String text = "Please wait";
+        answerProducer.response(Utils.editText(player.getId(), text, messageId));
+
+        if (pC == group.getPC()) {
+            group.getPlayers().forEach(
+                    p -> {
+                        String t = "Please confirm you are ready by clicking the button below.";
+                        answerProducer.response(
+                                Utils.text(
+                                        p.getId(),
+                                        t,
+                                        List.of(List.of(Map.of("text", "⚡️⚡️⚡️", "callback_data", "card")))
+                                )
+                        );
+                    }
+            );
+        }
+    }
+}

@@ -1,18 +1,71 @@
 package com.example.liars_bar.botService;
 
 import com.example.liars_bar.model.Player;
-import org.springframework.stereotype.Component;
+import com.example.liars_bar.model.Response;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
-public class MessageUtilsService {
+public class Utils {
 
-    private static final List<String> emojis = List.of("", "\uD83D\uDE04", "\uD83E\uDD78", "\uD83D\uDE2D", "\uD83E\uDD2C", "\uD83D\uDE2E\u200D\uD83D\uDCA8");
+    public static final List<String> emojis = List.of("", "\uD83D\uDE04", "\uD83E\uDD78", "\uD83D\uDE2D", "\uD83E\uDD2C", "\uD83D\uDE2E\u200D\uD83D\uDCA8");
 
+    public static Response error(String callbackQueryId, String error) {
+        return new Response(
+                Map.of(
+                        "callback_query_id", callbackQueryId,
+                        "text", error,
+                        "show_alert", true
+                ),
+                "answerCallbackQuery"
+        );
+    }
+
+    public static Response text(Long id, String text) {
+        return new Response(
+                Map.of(
+                        "chat_id", id,
+                        "text", text
+                ),
+                "sendMessage"
+        );
+    }
+
+    public static Response text(Long id, String text, List<List<Map<String, Object>>> keyboard) {
+        return new Response(
+                Map.of(
+                        "chat_id", id,
+                        "text", text,
+                        "reply_markup", Map.of("inline_keyboard", keyboard)
+                ),
+                "sendMessage"
+        );
+    }
+
+    public static Response editText(Long id, String text, int messageId) {
+        return new Response(
+                Map.of(
+                        "chat_id", id,
+                        "message_id", messageId,
+                        "text", text
+                ),
+                "editMessageText"
+        );
+    }
+
+    public static Response editText(Long id, String text, List<List<Map<String, Object>>> keyboard, int messageId) {
+        return new Response(
+                Map.of(
+                        "chat_id", id,
+                        "message_id", messageId,
+                        "text", text,
+                        "reply_markup", Map.of("inline_keyboard", keyboard)
+                ),
+                "editMessageText"
+        );
+    }
 
     public static Map<String, Object> sendMessage(Long chatId, String text) {
 
@@ -91,23 +144,7 @@ public class MessageUtilsService {
         );
     }
 
-    public static Map<String, Object> start(Long id) {
-        List<List<Map<String, Object>>> keyboards = List.of(
-                List.of(
-                        Map.of("text", "2", "callback_data", "c 2"),
-                        Map.of("text", "3", "callback_data", "c 3"),
-                        Map.of("text", "4", "callback_data", "c 4")
-                )
-        );
-
-        return MessageUtilsService.sendMessage(
-                id,
-                "O'yinchilar sonini tanlang!",
-                keyboards
-        );
-    }
-
-    public static Map<String, Object> editCard(Player p, int index) {
+    public static List<List<Map<String, Object>>> editCard(int index) {
         List<Map<String, Object>> row = new ArrayList<>(
                 List.of(
                         new HashMap<>(Map.of("text", emojis.get(1), "callback_data", "e1")),
@@ -125,12 +162,7 @@ public class MessageUtilsService {
                 )
         ));
 
-        return editMessage(
-                p.getCardI(),
-                p.getId(),
-                listCard(p.getCards()),
-                List.of(row)
-        );
+        return List.of(row);
     }
 
     public static Map<String, Object> action(Long id) {
@@ -140,12 +172,6 @@ public class MessageUtilsService {
         );
     }
 
-    private static String listCard(List<Character> cards) {
-        StringBuilder text = new StringBuilder("▪️ ");
-        for (char c : cards) {
-            text.append(" ").append(c).append(" ");
-        }
-        return text + " ▪️";
-    }
+
 
 }
