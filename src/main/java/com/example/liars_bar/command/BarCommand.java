@@ -28,13 +28,13 @@ public class BarCommand {
                 .filter(p -> p.getBar() != -1)
                 .count();
 
-        String text = "Please wait";
+        String text = "⌛️⏳⌛️⏳";
         answerProducer.response(Utils.editText(player.getId(), text, messageId));
 
         if (pC == group.getPC()) {
             group.getPlayers().forEach(
                     p -> {
-                        String t = "Please confirm you are ready by clicking the button below.";
+                        String t = "Bu tugmani ham bosing!";
                         answerProducer.response(
                                 Utils.text(
                                         p.getId(),

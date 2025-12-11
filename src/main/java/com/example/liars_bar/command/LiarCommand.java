@@ -34,7 +34,7 @@ public class LiarCommand {
         Player p = group.getPlayers().get(group.getTurn());
         Event event = Event.builder()
                 .action(LIE)
-                .endTime(Instant.now().plusSeconds(3))
+                .endTime(Instant.now().plusSeconds(5))
                 .build();
         p.setEvent(event);
 

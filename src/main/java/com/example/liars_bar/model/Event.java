@@ -23,8 +23,7 @@ public class Event {
     private Action action = Action.THROW;
 
     @Builder.Default
-    Instant endTime = Instant.now().plusSeconds(30);
-
+    Instant endTime = Instant.now().plusSeconds(25);
 
     @OneToOne(mappedBy = "event")
     private Player player;

@@ -1,18 +1,29 @@
 package com.example.liars_bar.rabbitmqService;
 
 import com.example.liars_bar.botService.ReferralService;
+import com.example.liars_bar.botService.Utils;
 import com.example.liars_bar.command.*;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.model.Request;
+import com.example.liars_bar.model.RequestCallback;
+import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
-import static com.example.liars_bar.config.RabbitQueue.REQUEST_QUEUE;
+import java.sql.SQLOutput;
+import java.util.Optional;
+
+import static com.example.liars_bar.config.RabbitQueue.*;
+import static com.example.liars_bar.model.PlayerState.GAME;
+import static com.example.liars_bar.model.PlayerState.START;
 
 @Service
 @RequiredArgsConstructor
 public class Consumer {
+
+    private final PlayerService playerService;
+    private final AnswerProducer answerProducer;
 
     private final ReferralService referralService;
     private final StartCommand startCommand;
@@ -24,12 +35,21 @@ public class Consumer {
     private final LiarCommand liarCommand;
     private final ThrowCommand throwCommand;
     private final ChooseCommand chooseCommand;
+    private final EmojiCommand emojiCommand;
 
-    @RabbitListener(queues = REQUEST_QUEUE)
-    public void request(Request request) {
+    @RabbitListener(queues = REQUEST_MESSAGE_QUEUE)
+    public void requestMessage(Request request) {
 
-        Player player = request.player();
+        Long id = request.id();
         String command = request.command();
+
+        Optional<Player> optionalPlayer = playerService.findById(id);
+        if (optionalPlayer.isEmpty()) {
+            System.err.println("Player not found: " + id);
+            System.out.println(request);
+            return;
+        }
+        Player player = optionalPlayer.get();
 
         if (command.startsWith("/start")) {
             referralService.isReferral(command)
@@ -39,21 +59,55 @@ public class Consumer {
                     );
             return;
         }
-        if (command.startsWith("c")) {
-            int count = command.charAt(1) - '0';
-            countCommand.execute(player, count);
-            return;
-        }
         switch (command) {
             case "exit" -> exitCommand.execute(player);
             case "quit" -> quitCommand.execute(player);
-            case "bar" -> barCommand.execute(player, request.messageId());
-            case "card" -> cardCommand.execute(player, request.messageId());
+        }
+
+    }
+
+    @RabbitListener(queues = REQUEST_CALLBACK_QUEUE)
+    public void requestCallback(RequestCallback request) {
+
+        Long id = request.id();
+        String command = request.command();
+        int messageId = request.messageId();
+        String callbackQueryId = request.callbackQueryId();
+
+        Optional<Player> optionalPlayer = playerService.findById(id);
+        if (optionalPlayer.isEmpty()) {
+            answerProducer.response(Utils.error(callbackQueryId, "Press /start"));
+            return;
+        }
+        Player player = optionalPlayer.get();
+
+        if (command.startsWith("x")) {
+
+            if (player.getPlayerState() != START) {
+                answerProducer.response(Utils.error(callbackQueryId, "Something went wrong!"));
+                return;
+            }
+            int count = command.charAt(1) - '0';
+            countCommand.execute(player, count, messageId);
+            return;
+        }
+        if (command.startsWith("e")) {
+
+            if (player.getPlayerState() != GAME) {
+                answerProducer.response(Utils.error(callbackQueryId, "Something went wrong!"));
+                return;
+            }
+            int count = command.charAt(1) - '0';
+            emojiCommand.execute(player, count);
+            return;
+        }
+        switch (command) {
+            case "bar" -> barCommand.execute(player, messageId);
+            case "card" -> cardCommand.execute(player, messageId);
             case "l" -> liarCommand.execute(player);
             case "t" -> throwCommand.execute(player);
             default -> chooseCommand.execute(player, Integer.parseInt(command));
         }
-
 
     }
 

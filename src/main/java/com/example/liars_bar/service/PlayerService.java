@@ -13,6 +13,10 @@ public class PlayerService {
 
     private final PlayerRepo playerRepo;
 
+    public boolean existsById(Long id) {
+        return playerRepo.existsById(id);
+    }
+
     public Optional<Player> findById(Long id) {
         return playerRepo.findById(id);
     }

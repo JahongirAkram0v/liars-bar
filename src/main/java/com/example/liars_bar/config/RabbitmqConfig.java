@@ -17,8 +17,13 @@ public class RabbitmqConfig {
     }
 
     @Bean
-    public Queue requestQueue() {
-        return new Queue(REQUEST_QUEUE);
+    public Queue requestMessageQueue() {
+        return new Queue(REQUEST_MESSAGE_QUEUE);
+    }
+
+    @Bean
+    public Queue requestCallbackQueue() {
+        return new Queue(REQUEST_CALLBACK_QUEUE);
     }
 
     @Bean

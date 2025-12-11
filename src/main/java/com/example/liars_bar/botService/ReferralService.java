@@ -40,7 +40,7 @@ public class ReferralService {
 
             group.getPlayers().forEach(
                     p -> {
-                        String text = player.getName() + " has joined the game. (" + (pS + 1) + "/" + group.getPC() + ")";
+                        String text = player.getName() + " qo'shildi. (" + (pS + 1) + "/" + group.getPC() + ")";
                         answerProducer.response(Utils.text(p.getId(), text));
                     }
             );
@@ -48,7 +48,7 @@ public class ReferralService {
             if (pS + 1 == group.getPC()) {
                 group.getPlayers().forEach(
                         p -> {
-                            String t = "Please confirm you are ready by clicking the button below.";
+                            String t = "Tugmani bosing!";
                             answerProducer.response(
                                     Utils.text(
                                             p.getId(),
@@ -68,7 +68,7 @@ public class ReferralService {
                 .map(Player::getPlayerIndex)
                 .toList();
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < group.getPC(); i++) {
             if (!indices.contains(i)) {
                 return i;
             }

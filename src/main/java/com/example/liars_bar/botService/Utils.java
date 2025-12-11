@@ -67,42 +67,6 @@ public class Utils {
         );
     }
 
-    public static Map<String, Object> sendMessage(Long chatId, String text) {
-
-        return Map.of(
-                "chat_id", chatId,
-                "text", text
-        );
-    }
-
-    public static Map<String, Object> sendMessage(Long chatId, String text, List<List<Map<String, Object>>> keyboard) {
-
-        return Map.of(
-                "chat_id", chatId,
-                "text", text,
-                "reply_markup", Map.of("inline_keyboard", keyboard)
-        );
-    }
-
-    public static Map<String, Object> editMessage(Integer messageId, Long chatId, String text) {
-
-        return Map.of(
-                "message_id", messageId,
-                "chat_id", chatId,
-                "text", text
-        );
-    }
-
-    public static Map<String, Object> editMessage(Integer messageId, Long chatId, String text, List<List<Map<String, Object>>> keyboard) {
-
-        return Map.of(
-                "message_id", messageId,
-                "chat_id", chatId,
-                "text", text,
-                "reply_markup", Map.of("inline_keyboard", keyboard)
-        );
-    }
-
     public static List<List<Map<String, Object>>> getBid(List<Character> cards) {
 
         List<Map<String, Object>> row = new ArrayList<>();
@@ -135,15 +99,6 @@ public class Utils {
         return row;
     }
 
-    public static Map<String, Object> errorMessage(String callbackQueryId) {
-
-        return Map.of(
-                "callback_query_id", callbackQueryId,
-                "text", "ERROR",
-                "show_alert", false
-        );
-    }
-
     public static List<List<Map<String, Object>>> editCard(int index) {
         List<Map<String, Object>> row = new ArrayList<>(
                 List.of(
@@ -164,14 +119,5 @@ public class Utils {
 
         return List.of(row);
     }
-
-    public static Map<String, Object> action(Long id) {
-        return Map.of(
-                "chat_id", id,
-                "action", "typing"
-        );
-    }
-
-
 
 }

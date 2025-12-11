@@ -25,7 +25,7 @@ public class Player {
     @Builder.Default
     private PlayerState playerState = PlayerState.START;
     //
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "event_id")
     private Event event;
     //
@@ -56,12 +56,12 @@ public class Player {
     private int card = -1;
 
     @Builder.Default
-    private Boolean c = true;
+    private boolean c = true;
 
     @Builder.Default
-    private Boolean isAlive = true;
+    private boolean isAlive = true;
 
     @Builder.Default
-    private Boolean isActive = true;
+    private boolean isActive = true;
 
 }

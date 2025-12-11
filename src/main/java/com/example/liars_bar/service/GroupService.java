@@ -30,8 +30,8 @@ public class GroupService {
     public int index(Group group) {
 
         List<Integer> indices = group.getPlayers().stream()
-                .filter(Player::getIsActive)
-                .filter(Player::getIsAlive)
+                .filter(Player::isActive)
+                .filter(Player::isAlive)
                 .map(Player::getPlayerIndex)
                 .toList();
 

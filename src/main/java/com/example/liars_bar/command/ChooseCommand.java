@@ -23,7 +23,7 @@ public class ChooseCommand {
         // Implementation of the choose command logic
         Group group = player.getGroup();
         List<Player> activePlayers = group.getPlayers().stream()
-                .filter(p -> p.getIsActive() && p.getIsAlive())
+                .filter(p -> p.isActive() && p.isAlive())
                 .toList();
 
         if (activePlayers.size() == 1) {
@@ -54,7 +54,7 @@ public class ChooseCommand {
                                         Map.of("text", "Throw", "callback_data", "t")
                                 )
                         ),
-                        player.getBar()
+                        player.getCard()
                 )
         );
     }

@@ -16,12 +16,12 @@ public class StartCommand {
 
 
     public void execute(Long id) {
-        String text = "Welcome to the Liars' Bar! Choose an option below to get started:";
+        String text = "O'yinchilar sonini tanlang!";
         List<List<Map<String, Object>>> keyboards = List.of(
                 List.of(
-                        Map.of("text", "2", "callback_data", "c2"),
-                        Map.of("text", "3", "callback_data", "c3"),
-                        Map.of("text", "4", "callback_data", "c4")
+                        Map.of("text", "2", "callback_data", "x2"),
+                        Map.of("text", "3", "callback_data", "x3"),
+                        Map.of("text", "4", "callback_data", "x4")
                 )
         );
         answerProducer.response(Utils.text(id, text, keyboards));

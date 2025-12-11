@@ -12,10 +12,10 @@ public class Bar {
 
     private final AnswerProducer answerProducer;
 
-    public void execute(Group group, Player player) {
+    public void execute(Group group) {
         group.getPlayers().forEach(
                 p -> answerProducer.response(
-                        Utils.editText(p.getId(), getResult(group, player), p.getBar())
+                        Utils.editText(p.getId(), getResult(group), p.getBar())
                 )
         );
     }
@@ -28,17 +28,19 @@ public class Bar {
         );
     }
 
-    public String getResult(Group group, Player pTemp) {
+    public String getResult(Group group) {
 
-        StringBuilder text = new StringBuilder("\uD83C\uDCCF : " + group.getCard() + "\n" );
-
+        StringBuilder text = new StringBuilder("\uD83D\uDD38 : " + group.getCard());
+        int size = group.getThrowCards().size();
+        if (size != 0) text.append(" | \uD83C\uDCCF x").append(size).append("\n");
+        else text.append("\n");
         for (Player p: group.getPlayers()) {
             text.append(getANC(p))
                     .append(" - (" )
                     .append(p.getAttempt())
                     .append("/6) " )
-                    .append(getA(p, pTemp))
-                    .append(" | ♠️x")
+                    .append(getA(p.getPlayerIndex(), group.getTurn()))
+                    .append(" | \uD83C\uDCCFx")
                     .append(p.getCards().size())
                     .append(getE(p))
                     .append("\n");
@@ -51,12 +53,12 @@ public class Bar {
         return " /" + Utils.emojis.get(p.getEM());
     }
 
-    private String getA(Player p, Player playerTemp) {
-        return p.equals(playerTemp) ? "\uD83D\uDC7E" : "";
+    private String getA(int pIndex, int pTIndex) {
+        return pIndex == pTIndex ? "\uD83D\uDC7E" : "";
     }
 
     private String getANC(Player p) {
-        return (p.getIsAlive() ? "\uD83D\uDC64 : " : "💀 : ") + p.getName();
+        return (p.isAlive() ? "\uD83D\uDC64 : " : "💀 : ") + p.getName();
     }
 
 }

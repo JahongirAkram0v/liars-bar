@@ -15,7 +15,7 @@ public class CardCommand {
 
     private final AnswerProducer answerProducer;
     private final PlayerService playerService;
-    private ShuffleService shuffleService;
+    private final ShuffleService shuffleService;
 
     public void execute(Player player, int messageId) {
         player.setCard(messageId);
@@ -29,7 +29,7 @@ public class CardCommand {
         if (playerCount == group.getPC()) {
             shuffleService.shuffle(group);
         } else {
-            String text = "Iltimos kuting, boshqa o'yinchilar ham tayyorlanmoqda.";
+            String text = "Iltimos kuting";
             answerProducer.response(Utils.editText(player.getId(), text, messageId));
         }
     }

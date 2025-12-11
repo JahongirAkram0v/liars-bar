@@ -1,8 +1,6 @@
 package com.example.liars_bar;
 
-import com.example.liars_bar.botService.*;
 import com.example.liars_bar.model.*;
-import com.example.liars_bar.rabbitmqService.AnswerProducer;
 import com.example.liars_bar.rabbitmqService.Producer;
 import com.example.liars_bar.service.PlayerService;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -13,8 +11,6 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import java.util.Optional;
 
 import static com.example.liars_bar.model.PlayerState.*;
 
@@ -29,7 +25,6 @@ public class MyBot extends TelegramWebhookBot {
     private final PlayerService playerService;
 
     private final Producer producer;
-    private final AnswerProducer answerProducer;
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
@@ -40,23 +35,11 @@ public class MyBot extends TelegramWebhookBot {
             Long id = callbackQuery.getMessage().getChatId();
             String command = callbackQuery.getData();
             Integer messageId = callbackQuery.getMessage().getMessageId();
-
             String callbackQueryId = callbackQuery.getId();
 
-            Optional<Player> optionalPlayer = playerService.findById(id);
-            if (optionalPlayer.isEmpty()) {
-                answerProducer.response(Utils.error(callbackQueryId, "Press /start"));
-                return null;
-            }
-            Player player = optionalPlayer.get();
-            PlayerState state = player.getPlayerState();
+            RequestCallback requestCallback = new RequestCallback(id, command, messageId, callbackQueryId);
+            producer.requestCallback(requestCallback);
 
-//            if (state == START) {
-//                answerProducer.response(Utils.error(callbackQueryId, "You are not in a game"));
-//                return null;
-//            }
-            Request request = new Request(player, command, messageId);
-            producer.request(request);
         }
 
         if (update.hasMessage() && update.getMessage().isCommand()) {
@@ -84,15 +67,15 @@ public class MyBot extends TelegramWebhookBot {
             PlayerState state = player.getPlayerState();
 
             if (state == START && command.startsWith("/start")) {
-                producer.request(new Request(player, command, -1));
+                producer.requestMessage(new Request(id, command));
                 return null;
             }
             if (state == ADD && command.equals("/quit")) {
-                producer.request(new Request(player, "exit", -1));
+                producer.requestMessage(new Request(id, "exit"));
                 return null;
             }
             if (state == GAME && command.equals("/quit")) {
-                producer.request(new Request(player, "quit", -1));
+                producer.requestMessage(new Request(id, "quit"));
                 return null;
             }
             return null;
