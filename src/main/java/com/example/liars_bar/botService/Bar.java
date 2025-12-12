@@ -15,7 +15,15 @@ public class Bar {
     public void execute(Group group) {
         group.getPlayers().forEach(
                 p -> answerProducer.response(
-                        Utils.editText(p.getId(), getResult(group), p.getBar())
+                        Utils.editText(p.getId(), getResult(group, null), p.getBar())
+                )
+        );
+    }
+
+    public void execute(Group group, String name) {
+        group.getPlayers().forEach(
+                p -> answerProducer.response(
+                        Utils.editText(p.getId(), getResult(group, name), p.getBar())
                 )
         );
     }
@@ -28,11 +36,11 @@ public class Bar {
         );
     }
 
-    public String getResult(Group group) {
+    public String getResult(Group group, String name) {
 
         StringBuilder text = new StringBuilder("\uD83D\uDD38 : " + group.getCard());
         int size = group.getThrowCards().size();
-        if (size != 0) text.append(" | \uD83C\uDCCF x").append(size).append("\n");
+        if (size != 0) text.append(" ❗️ ").append(name).append(" \uD83C\uDCCFx").append(size).append("\n");
         else text.append("\n");
         for (Player p: group.getPlayers()) {
             text.append(getANC(p))

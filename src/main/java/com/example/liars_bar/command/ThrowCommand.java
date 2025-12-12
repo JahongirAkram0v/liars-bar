@@ -28,6 +28,9 @@ public class ThrowCommand {
     public void execute(Player player) {
         Group group = player.getGroup();
         Event event = player.getEvent();
+        if (event == null) {
+            return;
+        }
         player.setEvent(null);
         playerService.save(player);
         eventService.delete(event);
@@ -44,7 +47,7 @@ public class ThrowCommand {
         Player p = group.getPlayers().get(group.getTurn());
         p.setEvent(new Event());
 
-        bar.execute(group);
+        bar.execute(group, player.getName());
 
         if (player.getCards().isEmpty()) {
             player.setActive(false);
