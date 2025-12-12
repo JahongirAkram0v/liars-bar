@@ -34,7 +34,7 @@ public class Bar {
         int size = group.getThrowCards().size();
         String name = group.getPlayers().get(group.getLPI()).getName();
         if (size != 0) text.append(" ❗️").append(name).append(" \uD83C\uDCCFx").append(size);
-        text.append("\n➖➖➖➖➖➖➖➖➖➖");
+        text.append("\n➖➖➖➖➖➖➖➖➖➖\n");
         for (Player p: group.getPlayers()) {
             text.append(getANC(p))
                     .append(" - (" )
