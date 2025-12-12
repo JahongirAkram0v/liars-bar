@@ -32,8 +32,9 @@ public class Bar {
 
         StringBuilder text = new StringBuilder("\uD83D\uDD38 : " + group.getCard());
         int size = group.getThrowCards().size();
-        if (size != 0) text.append(" ❗️").append(group.getPlayers().get(group.getLPI()).getName()).append(" \uD83C\uDCCFx").append(size).append("\n");
-        else text.append("\n");
+        String name = group.getPlayers().get(group.getLPI()).getName();
+        if (size != 0) text.append(" ❗️").append(name).append(" \uD83C\uDCCFx").append(size);
+        text.append("\n➖➖➖➖➖➖➖➖➖➖");
         for (Player p: group.getPlayers()) {
             text.append(getANC(p))
                     .append(" - (" )
