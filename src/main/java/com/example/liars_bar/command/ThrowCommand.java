@@ -60,7 +60,6 @@ public class ThrowCommand {
 
         card.executeB(p);
 
-        group.setLPI(player.getIndex());
         groupService.save(group);
     }
 }

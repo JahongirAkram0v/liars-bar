@@ -23,7 +23,8 @@ public class Group {
     @OrderBy("index ASC")
     @Builder.Default
     private List<Player> players = new ArrayList<>();
-    private int lPI;
+    @Builder.Default
+    private int lPI = -1;
 
     private Character Card;
     @Builder.Default

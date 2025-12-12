@@ -30,7 +30,7 @@ public class ReferralService {
 
         int pS = group.getPlayers().size();
 
-        if (pS < group.getPC()) {
+        if (pS < group.getPC() && group.getLPI() == -1) {
             player.setChances(new Random().nextInt(6) + 1);
             player.setIndex(findIndex(group));
             player.setPlayerState(ADD);
