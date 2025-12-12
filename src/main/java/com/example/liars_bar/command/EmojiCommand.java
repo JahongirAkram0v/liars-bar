@@ -23,7 +23,7 @@ public class EmojiCommand {
         }
         player.setEM(index);
         playerService.save(player);
-        bar.execute(group, null);
+        bar.execute(group);
         card.executeE(player);
     }
 }

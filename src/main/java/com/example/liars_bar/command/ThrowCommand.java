@@ -43,11 +43,12 @@ public class ThrowCommand {
         player.setTemp(new ArrayList<>());
 
         group.setThrowCards(thrownCards);
+        group.setLPI(player.getPlayerIndex());
         group.setTurn(groupService.index(group));
         Player p = group.getPlayers().get(group.getTurn());
         p.setEvent(new Event());
 
-        bar.execute(group, player.getName());
+        bar.execute(group);
 
         if (player.getCards().isEmpty()) {
             player.setActive(false);

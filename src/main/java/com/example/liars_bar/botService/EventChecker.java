@@ -27,7 +27,6 @@ public class EventChecker {
     @Scheduled(fixedRate = 1_000)
     public void checkEvents() {
         List<Event> events = eventService.findExpiredEvents(Instant.now());
-        if (!events.isEmpty())System.out.println("Checking events, found: " + events.size());
         for (Event ev : events) {
             process(ev);
         }

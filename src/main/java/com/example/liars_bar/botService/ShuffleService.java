@@ -60,7 +60,7 @@ public class ShuffleService {
         pTemp.setEvent(new Event());
 
         //bar
-        bar.execute(group, null);
+        bar.execute(group);
 
         //card
         for (Player p: activePlayers) {

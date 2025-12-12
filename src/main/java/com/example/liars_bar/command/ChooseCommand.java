@@ -38,7 +38,7 @@ public class ChooseCommand {
         player.setTemp(temp);
         groupService.save(group);
 
-        String text = "Sizning yurishingiz";
+        String text = "\uD83D\uDD39\uD83D\uDD39\uD83D\uDD39 Sizning yurishingiz \uD83D\uDD39\uD83D\uDD39\uD83D\uDD39";
 
         answerProducer.response(
                 Utils.editText(

@@ -15,7 +15,7 @@ public class Card {
     private final AnswerProducer answerProducer;
 
     public void executeB(Player player) {
-        String text = "Your turn";
+        String text = "\uD83D\uDD39\uD83D\uDD39\uD83D\uDD39 Sizning yurishingiz \uD83D\uDD39\uD83D\uDD39\uD83D\uDD39";
         answerProducer.response(
                 Utils.editText(
                         player.getId(),
@@ -59,11 +59,11 @@ public class Card {
     }
 
     private static String listCard(List<Character> cards) {
-        StringBuilder text = new StringBuilder("▪️ ");
+        StringBuilder text = new StringBuilder("\uD83D\uDD39\uD83D\uDD38\uD83D\uDD39 ");
         for (char c : cards) {
-            text.append(" ").append(c).append(" ");
+            text.append(" [").append(c).append("] ");
         }
-        return text + " ▪️";
+        return text + " \uD83D\uDD39\uD83D\uDD38\uD83D\uDD39";
     }
 
 
