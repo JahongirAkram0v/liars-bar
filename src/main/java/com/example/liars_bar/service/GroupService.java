@@ -32,7 +32,7 @@ public class GroupService {
         List<Integer> indices = group.getPlayers().stream()
                 .filter(Player::isActive)
                 .filter(Player::isAlive)
-                .map(Player::getPlayerIndex)
+                .map(Player::getIndex)
                 .toList();
 
         if (indices.contains(group.getTurn() + 1)) {

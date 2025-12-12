@@ -20,6 +20,10 @@ public class Bar {
         );
     }
 
+    public void executeP(Player p, String text) {
+        answerProducer.response(Utils.editText(p.getId(), text, p.getBar()));
+    }
+
     public void executeAll(Group group, String text) {
         group.getPlayers().forEach(
                 p -> answerProducer.response(
@@ -40,7 +44,7 @@ public class Bar {
                     .append(" - (" )
                     .append(p.getAttempt())
                     .append("/6) " )
-                    .append(getA(p.getPlayerIndex(), group.getTurn()))
+                    .append(getA(p.getIndex(), group.getTurn()))
                     .append(" | \uD83C\uDCCFx")
                     .append(p.getCards().size())
                     .append(getE(p))

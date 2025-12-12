@@ -43,7 +43,7 @@ public class ThrowCommand {
         player.setTemp(new ArrayList<>());
 
         group.setThrowCards(thrownCards);
-        group.setLPI(player.getPlayerIndex());
+        group.setLPI(player.getIndex());
         group.setTurn(groupService.index(group));
         Player p = group.getPlayers().get(group.getTurn());
         p.setEvent(new Event());
@@ -60,7 +60,7 @@ public class ThrowCommand {
 
         card.executeB(p);
 
-        group.setLPI(player.getPlayerIndex());
+        group.setLPI(player.getIndex());
         groupService.save(group);
     }
 }

@@ -3,7 +3,6 @@ package com.example.liars_bar.botService;
 import com.example.liars_bar.model.Event;
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
-import com.example.liars_bar.rabbitmqService.AnswerProducer;
 import com.example.liars_bar.service.EventService;
 import com.example.liars_bar.service.GroupService;
 import com.example.liars_bar.service.PlayerService;

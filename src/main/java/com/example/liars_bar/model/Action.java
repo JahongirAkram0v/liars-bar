@@ -5,4 +5,5 @@ public enum Action {
     THROW,
     LIE,
     SHUFFLE,
+    WIN,
 }

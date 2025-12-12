@@ -1,5 +1,6 @@
 package com.example.liars_bar.service;
 
+import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.repo.PlayerRepo;
 import lombok.RequiredArgsConstructor;
@@ -13,20 +14,12 @@ public class PlayerService {
 
     private final PlayerRepo playerRepo;
 
-    public boolean existsById(Long id) {
-        return playerRepo.existsById(id);
-    }
-
     public Optional<Player> findById(Long id) {
         return playerRepo.findById(id);
     }
 
     public void save(Player player) {
         playerRepo.save(player);
-    }
-
-    public void delete(Player player) {
-        playerRepo.delete(player);
     }
 
     public void reset(Long id) {

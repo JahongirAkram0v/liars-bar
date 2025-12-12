@@ -20,13 +20,12 @@ public class ChooseCommand {
     private final GroupService groupService;
 
     public void execute(Player player, int c) {
-        // Implementation of the choose command logic
         Group group = player.getGroup();
-        List<Player> activePlayers = group.getPlayers().stream()
+        int activePlayersSize = (int) group.getPlayers().stream()
                 .filter(p -> p.isActive() && p.isAlive())
-                .toList();
+                .count();
 
-        if (activePlayers.size() == 1) {
+        if (activePlayersSize == 1) {
             liarCommand.execute(player);
             return;
         }

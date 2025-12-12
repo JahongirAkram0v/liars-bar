@@ -32,7 +32,7 @@ public class ReferralService {
 
         if (pS < group.getPC()) {
             player.setChances(new Random().nextInt(6) + 1);
-            player.setPlayerIndex(findIndex(group));
+            player.setIndex(findIndex(group));
             player.setPlayerState(ADD);
             player.setGroup(group);
             group.getPlayers().add(player);
@@ -65,7 +65,7 @@ public class ReferralService {
     public int findIndex(Group group) {
 
         List<Integer> indices = group.getPlayers().stream()
-                .map(Player::getPlayerIndex)
+                .map(Player::getIndex)
                 .toList();
 
         for (int i = 0; i < group.getPC(); i++) {

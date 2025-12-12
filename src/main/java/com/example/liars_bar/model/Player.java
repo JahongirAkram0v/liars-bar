@@ -33,7 +33,7 @@ public class Player {
     @JoinColumn(name = "group_id")
     private Group group;
 
-    private int playerIndex;
+    private int index;
 
     private int chances;
 

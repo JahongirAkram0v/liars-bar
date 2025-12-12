@@ -31,6 +31,7 @@ public class LiarCommand {
         boolean isLie = group.getThrowCards().stream()
                 .anyMatch(s -> s != group.getCard() && s != 'J');
         group.setTurn(isLie ? group.getLPI(): group.getTurn());
+
         Player p = group.getPlayers().get(group.getTurn());
         Event event = Event.builder()
                 .action(LIE)

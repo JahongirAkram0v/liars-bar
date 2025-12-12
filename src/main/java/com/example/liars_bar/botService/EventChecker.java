@@ -23,6 +23,7 @@ public class EventChecker {
     private final ThrowCommand throwCommand;
     private final Shoot shoot;
     private final ShuffleService shuffleService;
+    private final Win win;
 
     @Scheduled(fixedRate = 1_000)
     public void checkEvents() {
@@ -46,6 +47,9 @@ public class EventChecker {
         }
         if (action == SHUFFLE) {
             shuffleService.shuffle(player.getGroup());
+        }
+        if (action == WIN) {
+            win.execute(player);
         }
     }
 }

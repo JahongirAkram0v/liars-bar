@@ -23,9 +23,9 @@ public class ExitCommand {
         for (Player p: group.getPlayers()) {
             String text;
             if (p.equals(player)) {
-                text = "You have exited the game.";
+                text = "Siz guruhni tark etdiniz.";
             } else {
-                text = player.getName() + " has exited the game.";
+                text = player.getName() + " guruhni tark etdi.";
             }
             answerProducer.response(Utils.text(p.getId(), text));
         }

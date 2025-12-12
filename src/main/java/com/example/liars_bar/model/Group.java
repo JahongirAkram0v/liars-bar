@@ -20,7 +20,7 @@ public class Group {
     private String id;
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @OrderBy("playerIndex ASC")
+    @OrderBy("index ASC")
     @Builder.Default
     private List<Player> players = new ArrayList<>();
     private int lPI;

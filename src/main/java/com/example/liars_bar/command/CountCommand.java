@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Random;
 
 import static com.example.liars_bar.model.PlayerState.ADD;
-import static com.example.liars_bar.model.PlayerState.START;
 
 @Component
 @RequiredArgsConstructor
@@ -35,7 +34,7 @@ public class CountCommand {
         groupService.save(group);
 
         player.setChances(new Random().nextInt(6) + 1);
-        player.setPlayerIndex(0);
+        player.setIndex(0);
         player.setPlayerState(ADD);
         player.setGroup(group);
         playerService.save(player);
