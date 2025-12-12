@@ -12,14 +12,6 @@ public class Bar {
 
     private final AnswerProducer answerProducer;
 
-    public void execute(Group group) {
-        group.getPlayers().forEach(
-                p -> answerProducer.response(
-                        Utils.editText(p.getId(), getResult(group, null), p.getBar())
-                )
-        );
-    }
-
     public void execute(Group group, String name) {
         group.getPlayers().forEach(
                 p -> answerProducer.response(
