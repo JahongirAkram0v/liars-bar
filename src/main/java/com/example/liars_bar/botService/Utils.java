@@ -1,6 +1,5 @@
 package com.example.liars_bar.botService;
 
-import com.example.liars_bar.model.Player;
 import com.example.liars_bar.model.Response;
 
 import java.util.ArrayList;

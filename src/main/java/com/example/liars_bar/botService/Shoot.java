@@ -1,11 +1,9 @@
 package com.example.liars_bar.botService;
 
-import com.example.liars_bar.model.Action;
 import com.example.liars_bar.model.Event;
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.service.EventService;
-import com.example.liars_bar.service.GroupService;
 import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,7 +22,6 @@ public class Shoot {
     private final Card card;
     private final PlayerService playerService;
     private final EventService eventService;
-    private final Win win;
 
 
     public void execute(Player player) {
@@ -42,7 +39,7 @@ public class Shoot {
 
             card.executeAll(group, "omadi yoq ekan");
 
-            List<Player> alivePlayers = group.getPlayers().stream()
+            List<Player> alivePlayers = group.getPlayersList().stream()
                     .filter(Player::isAlive)
                     .toList();
             if (alivePlayers.size() == 1) {

@@ -5,7 +5,6 @@ import com.example.liars_bar.model.Action;
 import com.example.liars_bar.model.Event;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.service.EventService;
-import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

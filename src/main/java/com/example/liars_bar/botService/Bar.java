@@ -13,7 +13,7 @@ public class Bar {
     private final AnswerProducer answerProducer;
 
     public void execute(Group group) {
-        group.getPlayers().forEach(
+        group.getPlayersList().forEach(
                 p -> answerProducer.response(
                         Utils.editText(p.getId(), getResult(group), p.getBar())
                 )
@@ -25,7 +25,7 @@ public class Bar {
     }
 
     public void executeAll(Group group, String text) {
-        group.getPlayers().forEach(
+        group.getPlayersList().forEach(
                 p -> answerProducer.response(
                         Utils.editText(p.getId(), text, p.getBar())
                 )
@@ -36,17 +36,18 @@ public class Bar {
 
         StringBuilder text = new StringBuilder("\uD83D\uDD38 : " + group.getCard());
         int size = group.getThrowCards().size();
-        String name = group.getPlayers().get(group.getLPI()).getName();
-        if (size != 0) text.append(" ❗️").append(name).append(" \uD83C\uDCCFx").append(size);
+        int li = group.getLI();
+        String name = "";
+        if (size != 0) {
+            if (li != -1) name = group.getPlayer(li).getName(); //TODO fix
+            text.append(" ❗️").append(name).append(" \uD83C\uDCCFx").append(size);
+        }
         text.append("\n➖➖➖➖➖➖➖➖➖➖\n");
-        for (Player p: group.getPlayers()) {
+        for (Player p: group.getPlayersList()) {
             text.append(getANC(p))
-                    .append(" - (" )
-                    .append(p.getAttempt())
-                    .append("/6) " )
+                    .append(" - (" ).append(p.getAttempt()).append("/6) " )
                     .append(getA(p.getIndex(), group.getTurn()))
-                    .append(" | \uD83C\uDCCFx")
-                    .append(p.getCards().size())
+                    .append(" | \uD83C\uDCCFx").append(p.getCards().size())
                     .append(getE(p))
                     .append("\n");
         }

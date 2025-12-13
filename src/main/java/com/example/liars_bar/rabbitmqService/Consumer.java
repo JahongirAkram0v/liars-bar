@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLOutput;
 import java.util.Optional;
 
 import static com.example.liars_bar.config.RabbitQueue.*;

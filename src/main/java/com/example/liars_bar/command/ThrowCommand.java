@@ -23,9 +23,16 @@ public class ThrowCommand {
     private final Bar bar;
     private final Card card;
     private final EventService eventService;
+    private final LiarCommand liarCommand;
 
 
     public void execute(Player player) {
+
+        if (player.getTemp().isEmpty()) {
+            liarCommand.execute(player);
+            return;
+        }
+
         Group group = player.getGroup();
         Event event = player.getEvent();
         if (event == null) {
@@ -39,13 +46,19 @@ public class ThrowCommand {
                 .map(i -> player.getCards().get(i))
                 .toList();
 
-        thrownCards.forEach(c -> player.getCards().remove(c));
+        List<Character> playerCards = new ArrayList<>();
+        for (int i = 0; i < player.getCards().size(); i++) {
+            if (!player.getTemp().contains(i)) {
+                playerCards.add(player.getCards().get(i));
+            }
+        }
+        player.setCards(playerCards);
         player.setTemp(new ArrayList<>());
 
         group.setThrowCards(thrownCards);
-        group.setLPI(player.getIndex());
+        group.setLI(player.getIndex());
         group.setTurn(groupService.index(group));
-        Player p = group.getPlayers().get(group.getTurn());
+        Player p = group.currentPlayer();
         p.setEvent(new Event());
 
         bar.execute(group);

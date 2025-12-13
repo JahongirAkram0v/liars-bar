@@ -21,7 +21,7 @@ public class ChooseCommand {
 
     public void execute(Player player, int c) {
         Group group = player.getGroup();
-        int activePlayersSize = (int) group.getPlayers().stream()
+        int activePlayersSize = (int) group.getPlayersList().stream()
                 .filter(p -> p.isActive() && p.isAlive())
                 .count();
 

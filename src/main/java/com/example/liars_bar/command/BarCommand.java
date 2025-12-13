@@ -24,7 +24,7 @@ public class BarCommand {
         playerService.save(player);
         Group group = player.getGroup();
 
-        int pC = (int) group.getPlayers().stream()
+        int pC = (int) group.getPlayersList().stream()
                 .filter(p -> p.getBar() != -1)
                 .count();
 
@@ -32,7 +32,7 @@ public class BarCommand {
         answerProducer.response(Utils.editText(player.getId(), text, messageId));
 
         if (pC == group.getPC()) {
-            group.getPlayers().forEach(
+            group.getPlayersList().forEach(
                     p -> {
                         String t = "Bu tugmani ham bosing!";
                         answerProducer.response(

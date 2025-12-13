@@ -47,7 +47,7 @@ public class Card {
     }
 
     public void executeAll(Group group, String text) {
-        group.getPlayers().forEach(
+        group.getPlayersList().forEach(
                 p -> answerProducer.response(
                         Utils.editText(
                                 p.getId(),

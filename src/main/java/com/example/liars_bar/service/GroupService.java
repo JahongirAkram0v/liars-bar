@@ -29,14 +29,14 @@ public class GroupService {
 
     public int index(Group group) {
 
-        List<Integer> indices = group.getPlayers().stream()
+        List<Integer> indices = group.getPlayersList().stream()
                 .filter(Player::isActive)
                 .filter(Player::isAlive)
                 .map(Player::getIndex)
                 .toList();
 
-        if (indices.contains(group.getTurn() + 1)) {
-            return group.getTurn() + 1;
+        for (int i: indices) {
+            if (group.getTurn() < i) return i;
         }
 
         return indices.getFirst();

@@ -1,6 +1,5 @@
 package com.example.liars_bar.service;
 
-import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.repo.PlayerRepo;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,10 @@ public class PlayerService {
         playerRepo.save(player);
     }
 
-    public void reset(Long id) {
-        save(Player.builder().id(id).build());
+    public void reset(Player player) {
+        save(Player.builder()
+                .id(player.getId())
+                .name(player.getName())
+                .build());
     }
 }

@@ -28,17 +28,18 @@ public class ReferralService {
 
     public void referral(Player player, Group group) {
 
-        int pS = group.getPlayers().size();
+        int pS = group.playerCount();
 
-        if (pS < group.getPC() && group.getLPI() == -1) {
+        if (pS < group.getPC() && group.getLI() == -1) {
             player.setChances(new Random().nextInt(6) + 1);
-            player.setIndex(findIndex(group));
+            int index = findIndex(group);
+            player.setIndex(index);
             player.setPlayerState(ADD);
             player.setGroup(group);
-            group.getPlayers().add(player);
+            group.addPlayer(player);
             groupService.save(group);
 
-            group.getPlayers().forEach(
+            group.getPlayersList().forEach(
                     p -> {
                         String text = player.getName() + " qo'shildi. (" + (pS + 1) + "/" + group.getPC() + ")";
                         answerProducer.response(Utils.text(p.getId(), text));
@@ -46,7 +47,7 @@ public class ReferralService {
             );
 
             if (pS + 1 == group.getPC()) {
-                group.getPlayers().forEach(
+                group.getPlayersList().forEach(
                         p -> {
                             String t = "Tugmani bosing!";
                             answerProducer.response(
@@ -64,9 +65,7 @@ public class ReferralService {
 
     public int findIndex(Group group) {
 
-        List<Integer> indices = group.getPlayers().stream()
-                .map(Player::getIndex)
-                .toList();
+        List<Integer> indices = group.getPlayersListIndex();
 
         for (int i = 0; i < group.getPC(); i++) {
             if (!indices.contains(i)) {

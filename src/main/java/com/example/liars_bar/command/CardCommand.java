@@ -22,7 +22,7 @@ public class CardCommand {
         playerService.save(player);
         Group group = player.getGroup();
 
-        int playerCount = (int) group.getPlayers().stream()
+        int playerCount = (int) group.getPlayersList().stream()
                 .filter(p -> p.getCard() != -1)
                 .count();
 

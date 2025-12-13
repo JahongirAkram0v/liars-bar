@@ -13,5 +13,4 @@ public interface EventRepo extends JpaRepository<Event, Integer> {
     @Query("SELECT e FROM Event e WHERE e.endTime <= :now")
     List<Event> findExpiredEvents(@Param("now") Instant now);
 
-
 }

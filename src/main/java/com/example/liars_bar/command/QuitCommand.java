@@ -7,6 +7,7 @@ import com.example.liars_bar.model.Action;
 import com.example.liars_bar.model.Event;
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
+import com.example.liars_bar.service.EventService;
 import com.example.liars_bar.service.GroupService;
 import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
@@ -24,31 +25,47 @@ public class QuitCommand {
     private final Win win;
     private final Bar bar;
     private final Card card;
+    private final EventService eventService;
 
     public void execute(Player player) {
 
         Group group = player.getGroup();
-        group.getPlayers().remove(player);
-        group.setTurn(player.getIndex());
-        group.setLPI(player.getIndex());
-        bar.executeP(player, "guruhni tark etdingiz.");
-        card.execute(player, "Yangidan boshlash uchun /start ni bosing yoki havola orqali o'yinga qo'shiling.");
-        playerService.reset(player.getId());
+        Player pTemp = group.currentPlayer();
+        Event event = pTemp.getEvent();
+        if (event != null) {
+            pTemp.setEvent(null);
+            playerService.save(pTemp);
+            eventService.delete(event);
+        }
 
-        bar.execute(group);
+        int index = player.getIndex();
+        group.setTurn(index);
+        group.setLI(index);
+        playerService.reset(player);
+        group.setTurn(groupService.index(group));
+        Player p = group.currentPlayer();
+        group.setTurn(p.getIndex());
+        group.removePlayer(index);
+        groupService.save(group);
 
-        List<Player> alivePlayers = group.getPlayers().stream()
+        System.out.println(group.getTurn());
+        List<Player> alivePlayers = group.getPlayersList().stream()
                 .filter(Player::isAlive)
                 .toList();
         if (alivePlayers.size() == 1) {
             win.execute(alivePlayers.getFirst());
         }
-        group.setTurn(groupService.index(group));
-        Player p = group.getPlayers().get(group.getTurn());
-        Event event = Event.builder()
+        Event newEvent = Event.builder()
                 .action(Action.SHUFFLE)
                 .endTime(Instant.now().plusSeconds(3))
                 .build();
-        p.setEvent(event);
+        p.setEvent(newEvent);
+        bar.execute(group);
+        card.executeE(pTemp);
+        card.executeB(p);
+
+        bar.executeP(player, "guruhni tark etdingiz.");
+        card.execute(player, "Yangidan boshlash uchun /start ni bosing yoki havola orqali o'yinga qo'shiling.");
+
     }
 }

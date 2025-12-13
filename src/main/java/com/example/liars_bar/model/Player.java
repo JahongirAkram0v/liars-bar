@@ -17,23 +17,23 @@ public class Player {
 
     @Id
     private Long id;
-    //
+
+    private int index;
+
     @Column(length = 30)
     private String name;
-    //
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private PlayerState playerState = PlayerState.START;
-    //
+
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "event_id")
     private Event event;
-    //
+
     @ManyToOne
     @JoinColumn(name = "group_id")
     private Group group;
-
-    private int index;
 
     private int chances;
 
@@ -56,12 +56,8 @@ public class Player {
     private int card = -1;
 
     @Builder.Default
-    private boolean c = true;
-
-    @Builder.Default
     private boolean isAlive = true;
 
     @Builder.Default
     private boolean isActive = true;
-
 }

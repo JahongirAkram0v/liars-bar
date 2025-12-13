@@ -32,7 +32,7 @@ public class ShuffleService {
 
     public void shuffle(Group group) {
 
-        Player player = group.getPlayers().get(group.getTurn());
+        Player player = group.currentPlayer();
         Event event = player.getEvent();
         if (event != null) {
             player.setEvent(null);
@@ -44,25 +44,25 @@ public class ShuffleService {
 
         Collections.shuffle(cards, new Random());
 
-        List<Player> activePlayers = group.getPlayers().stream()
-                .filter(p -> p.isActive() && p.isAlive())
+        List<Player> alivePlayers = group.getPlayersList().stream()
+                .filter(Player::isAlive)
                 .toList();
 
-        for (int i = 0; i < activePlayers.size(); i++) {
-            activePlayers.get(i).setCards(cards.subList(5 * i, 5 * (i + 1)));
-            activePlayers.get(i).setPlayerState(GAME);
+        for (int i = 0; i < alivePlayers.size(); i++) {
+            alivePlayers.get(i).setCards(cards.subList(5 * i, 5 * (i + 1)));
+            alivePlayers.get(i).setPlayerState(GAME);
         }
 
         group.setCard(Arrays.asList('A', 'K', 'Q').get(new Random().nextInt(3)));
 
-        Player pTemp = group.getPlayers().get(group.getTurn());
+        Player pTemp = group.currentPlayer();
         pTemp.setEvent(new Event());
 
         //bar
         bar.execute(group);
 
         //card
-        for (Player p: activePlayers) {
+        for (Player p: alivePlayers) {
             if (p.equals(pTemp)) {
                 card.executeB(p);
             } else {

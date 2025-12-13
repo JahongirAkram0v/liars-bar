@@ -18,16 +18,16 @@ public class ExitCommand {
     public void execute(Player player) {
 
         Group group = player.getGroup();
-        playerService.reset(player.getId());
+        playerService.reset(player);
 
-        for (Player p: group.getPlayers()) {
-            String text;
-            if (p.equals(player)) {
-                text = "Siz guruhni tark etdiniz.";
-            } else {
-                text = player.getName() + " guruhni tark etdi.";
-            }
-            answerProducer.response(Utils.text(p.getId(), text));
-        }
+        group.getPlayersList()
+                .forEach(p -> {
+                    String text = p.equals(player)
+                            ? "Siz guruhni tark etdiniz."
+                            : player.getName() + " guruhni tark etdi.";
+
+                    answerProducer.response(Utils.text(p.getId(), text));
+                });
+
     }
 }
