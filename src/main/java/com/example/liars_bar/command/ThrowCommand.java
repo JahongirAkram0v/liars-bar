@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -28,56 +27,49 @@ public class ThrowCommand {
 
 
     public void execute(Player player) {
+        Group group = player.getGroup();
+        boolean alivePlayersCount = group.getPlayers().values().stream().filter(Player::isAlive).count() == 1;
 
-        if (player.getTemp().isEmpty()) {
+        if (alivePlayersCount && player.getTemp().isEmpty()) {
             liarCommand.execute(player);
             return;
         }
 
-        Group group = player.getGroup();
         Event event = player.getEvent();
         if (event == null) {
+            System.err.println("Player must have Throw event:" + player.getId());
             return;
         }
-        player.setEvent(null);
-        playerService.save(player);
+        playerService.resetEvent(player);
         eventService.delete(event);
 
-        List<Character> thrownCards = player.getTemp().stream()
-                .map(i -> player.getCards().get(i))
-                .toList();
-
         List<Character> playerCards = new ArrayList<>();
+        List<Character> thrownCards = new ArrayList<>();
         for (int i = 0; i < player.getCards().size(); i++) {
+            char c = player.getCards().get(i);
             if (!player.getTemp().contains(i)) {
-                playerCards.add(player.getCards().get(i));
-            }
+                playerCards.add(c);
+            } else thrownCards.add(c);
         }
         player.setCards(playerCards);
         player.setTemp(new ArrayList<>());
-
         group.setThrowCards(thrownCards);
-        group.setLI(player.getId());
+
+        group.setLI(player.getIndex());
         groupService.updateTurn(group);
-        Optional<Player> optionalPlayer = group.currentPlayer();
-        if (optionalPlayer.isEmpty()) {
-            System.err.println("Throw: player not found");
-            return;
-        }
-        Player p = optionalPlayer.get();
+        Player p = group.currentPlayer();
         p.setEvent(new Event());
 
         bar.execute(group);
+        card.executeB(p);
 
-        if (player.getCards().isEmpty()) {
+        if (playerCards.isEmpty()) {
             player.setActive(false);
             String text = "Sizda karta qolmadi, o'yinni kuzating.";
             card.execute(player, text);
         } else {
             card.executeE(player);
         }
-
-        card.executeB(p);
 
         groupService.save(group);
     }
