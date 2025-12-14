@@ -27,4 +27,8 @@ public class Event {
 
     @OneToOne(mappedBy = "event")
     private Player player;
+
+    public static Instant getMin() {
+        return Instant.now().plusSeconds(5);
+    }
 }

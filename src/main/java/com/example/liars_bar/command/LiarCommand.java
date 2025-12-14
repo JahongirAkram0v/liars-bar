@@ -11,8 +11,8 @@ import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static com.example.liars_bar.model.Action.LIE;
 
@@ -43,10 +43,16 @@ public class LiarCommand {
                 .anyMatch(s -> s != group.getCard() && s != 'J');
         group.setTurn(isLie ? group.getLI(): group.getTurn());
 
-        Player p = group.currentPlayer();
+        Optional<Player> optionalPlayer = group.currentPlayer();
+        if (optionalPlayer.isEmpty()) {
+            System.err.println("Liar: player not found");
+            return;
+        }
+        Player p = optionalPlayer.get();
+
         Event newEvent = Event.builder()
                 .action(LIE)
-                .endTime(Instant.now().plusSeconds(5))
+                .endTime(Event.getMin())
                 .build();
         p.setEvent(newEvent);
 

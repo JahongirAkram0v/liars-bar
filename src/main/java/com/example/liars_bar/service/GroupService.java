@@ -27,18 +27,32 @@ public class GroupService {
         groupRepo.delete(group);
     }
 
-    public int index(Group group) {
+    public void updateTurn(Group group) {
 
-        List<Integer> indices = group.getPlayersList().stream()
+        List<Long> indices = group.getPlayers().values().stream()
                 .filter(Player::isActive)
                 .filter(Player::isAlive)
-                .map(Player::getIndex)
+                .map(Player::getId)
+                .sorted()
                 .toList();
 
-        for (int i: indices) {
-            if (group.getTurn() < i) return i;
+        if (indices.isEmpty()) {
+            System.err.println("update Turn is empty");
+            System.err.println("--------------------");
+            return;
         }
 
-        return indices.getFirst();
+        Long current = group.getTurn();
+        for (Long id : indices) {
+            if (current < id) {
+                group.setTurn(id);
+                save(group);
+                return;
+            }
+        }
+
+        group.setTurn(indices.getFirst());
+        save(group);
     }
+
 }

@@ -2,7 +2,6 @@ package com.example.liars_bar.command;
 
 import com.example.liars_bar.botService.Bar;
 import com.example.liars_bar.botService.Card;
-import com.example.liars_bar.botService.Win;
 import com.example.liars_bar.model.Action;
 import com.example.liars_bar.model.Event;
 import com.example.liars_bar.model.Group;
@@ -13,8 +12,10 @@ import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+
+import static com.example.liars_bar.model.Action.WIN;
 
 @Component
 @RequiredArgsConstructor
@@ -22,7 +23,6 @@ public class QuitCommand {
 
     private final PlayerService playerService;
     private final GroupService groupService;
-    private final Win win;
     private final Bar bar;
     private final Card card;
     private final EventService eventService;
@@ -30,7 +30,12 @@ public class QuitCommand {
     public void execute(Player player) {
 
         Group group = player.getGroup();
-        Player pTemp = group.currentPlayer();
+        Optional<Player> optionalPlayer = group.currentPlayer();
+        if (optionalPlayer.isEmpty()) {
+            System.err.println("quit: player not found which lpi");
+            return;
+        }
+        Player pTemp = optionalPlayer.get();
         Event event = pTemp.getEvent();
         if (event != null) {
             pTemp.setEvent(null);
@@ -38,34 +43,50 @@ public class QuitCommand {
             eventService.delete(event);
         }
 
-        int index = player.getIndex();
-        group.setTurn(index);
-        group.setLI(index);
-        playerService.reset(player);
-        group.setTurn(groupService.index(group));
-        Player p = group.currentPlayer();
-        group.setTurn(p.getIndex());
+        Long index = player.getId();
+        if (!pTemp.getId().equals(index)) {
+            group.setTurn(index);
+            group.setLI(index);
+        }
+
         group.removePlayer(index);
+        playerService.reset(player);
         groupService.save(group);
+
+        groupService.updateTurn(group);
+        Optional<Player> optionalPlayerT = group.currentPlayer();
+        if (optionalPlayerT.isEmpty()) {
+            System.err.println("quit: player not found");
+            return;
+        }
+        Player p = optionalPlayerT.get();
+        Event newEvent = Event.builder()
+                .action(Action.SHUFFLE)
+                .endTime(Event.getMin())
+                .build();
+        p.setEvent(newEvent);
+        playerService.save(p);
 
         System.out.println(group.getTurn());
         List<Player> alivePlayers = group.getPlayersList().stream()
                 .filter(Player::isAlive)
                 .toList();
+
+        bar.executeP(player, "guruhni tark etdingiz.");
+        card.execute(player, "Yangidan boshlash uchun /start ni bosing.");
+
         if (alivePlayers.size() == 1) {
-            win.execute(alivePlayers.getFirst());
+            Player pT = alivePlayers.getFirst();
+            Event win = Event.builder()
+                    .action(WIN)
+                    .endTime(Event.getMin())
+                    .build();
+            pT.setEvent(win);
+            playerService.save(pT);
         }
-        Event newEvent = Event.builder()
-                .action(Action.SHUFFLE)
-                .endTime(Instant.now().plusSeconds(3))
-                .build();
-        p.setEvent(newEvent);
+
         bar.execute(group);
         card.executeE(pTemp);
         card.executeB(p);
-
-        bar.executeP(player, "guruhni tark etdingiz.");
-        card.execute(player, "Yangidan boshlash uchun /start ni bosing yoki havola orqali o'yinga qo'shiling.");
-
     }
 }

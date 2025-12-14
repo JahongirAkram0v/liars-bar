@@ -32,13 +32,18 @@ public class ShuffleService {
 
     public void shuffle(Group group) {
 
-        Player player = group.currentPlayer();
+        Optional<Player> optionalPlayer = group.currentPlayer();
+        if (optionalPlayer.isEmpty()) {
+            System.err.println("shuffle: player not found which lpi");
+            return;
+        }
+        Player player = optionalPlayer.get();
+
         Event event = player.getEvent();
         if (event != null) {
             player.setEvent(null);
             playerService.save(player);
             eventService.delete(event);
-            group.setTurn(groupService.index(group));
         }
         group.setThrowCards(new ArrayList<>());
 
@@ -55,7 +60,13 @@ public class ShuffleService {
 
         group.setCard(Arrays.asList('A', 'K', 'Q').get(new Random().nextInt(3)));
 
-        Player pTemp = group.currentPlayer();
+        Optional<Player> optionalPlayerTemp = group.currentPlayer();
+        if (optionalPlayerTemp.isEmpty()) {
+            System.err.println("shuffle: player not found");
+            return;
+        }
+        Player pTemp = optionalPlayerTemp.get();
+
         pTemp.setEvent(new Event());
 
         //bar

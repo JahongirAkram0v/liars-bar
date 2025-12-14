@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -56,9 +57,14 @@ public class ThrowCommand {
         player.setTemp(new ArrayList<>());
 
         group.setThrowCards(thrownCards);
-        group.setLI(player.getIndex());
-        group.setTurn(groupService.index(group));
-        Player p = group.currentPlayer();
+        group.setLI(player.getId());
+        groupService.updateTurn(group);
+        Optional<Player> optionalPlayer = group.currentPlayer();
+        if (optionalPlayer.isEmpty()) {
+            System.err.println("Throw: player not found");
+            return;
+        }
+        Player p = optionalPlayer.get();
         p.setEvent(new Event());
 
         bar.execute(group);

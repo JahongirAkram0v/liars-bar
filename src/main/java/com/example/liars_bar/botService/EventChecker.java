@@ -40,12 +40,15 @@ public class EventChecker {
                 player.getTemp().add(0);
             }
             throwCommand.execute(player);
+            return;
         }
         if (action == LIE) {
             shoot.execute(player);
+            return;
         }
         if (action == SHUFFLE) {
             shuffleService.shuffle(player.getGroup());
+            return;
         }
         if (action == WIN) {
             win.execute(player);

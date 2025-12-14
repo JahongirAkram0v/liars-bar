@@ -34,7 +34,6 @@ public class CountCommand {
         groupService.save(group);
 
         player.setChances(new Random().nextInt(6) + 1);
-        player.setIndex(0);
         player.setPlayerState(ADD);
         player.setGroup(group);
         playerService.save(player);
