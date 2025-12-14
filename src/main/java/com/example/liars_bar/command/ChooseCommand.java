@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -21,11 +22,13 @@ public class ChooseCommand {
 
     public void execute(Player player, int c) {
         Group group = player.getGroup();
-        int activePlayersSize = (int) group.getPlayersList().stream()
-                .filter(p -> p.isActive() && p.isAlive())
-                .count();
 
-        if (activePlayersSize == 1) {
+        if (group.getTurn() == player.getIndex()) {
+            return;
+        }
+
+        boolean isActiveAlone = group.isActiveAlone();
+        if (isActiveAlone) {
             liarCommand.execute(player);
             return;
         }

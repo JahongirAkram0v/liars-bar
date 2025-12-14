@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.example.liars_bar.model.Action.LIE;
 
@@ -26,8 +27,12 @@ public class LiarCommand {
     private final EventService eventService;
 
     public void execute(Player player) {
-
         Group group = player.getGroup();
+
+        if (group.getTurn() == player.getIndex()) {
+            return;
+        }
+
         Event event = player.getEvent();
         if (event == null) {
             System.err.println("Player must have Liar event:" + player.getId());
