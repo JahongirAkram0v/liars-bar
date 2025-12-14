@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.example.liars_bar.model.Action.LIE;
 
@@ -31,6 +30,7 @@ public class LiarCommand {
         Group group = player.getGroup();
         Event event = player.getEvent();
         if (event == null) {
+            System.err.println("Player must have Liar event:" + player.getId());
             return;
         }
         player.setEvent(null);
@@ -38,18 +38,11 @@ public class LiarCommand {
         eventService.delete(event);
 
         String special = special(group.getThrowCards(), group.getCard());
-        ///
-        boolean isLie = group.getThrowCards().stream()
-                .anyMatch(s -> s != group.getCard() && s != 'J');
+
+        boolean isLie = group.getThrowCards().stream().anyMatch(s -> s != group.getCard() && s != 'J');
         group.setTurn(isLie ? group.getLI(): group.getTurn());
 
-        Optional<Player> optionalPlayer = group.currentPlayer();
-        if (optionalPlayer.isEmpty()) {
-            System.err.println("Liar: player not found");
-            return;
-        }
-        Player p = optionalPlayer.get();
-
+        Player p = group.currentPlayer();
         Event newEvent = Event.builder()
                 .action(LIE)
                 .endTime(Event.getMin())
@@ -58,6 +51,7 @@ public class LiarCommand {
 
         group.getPlayersList().forEach(t -> t.setActive(true));
         groupService.save(group);
+        groupService.updateTurn(group);
 
         String text = "\uD83C\uDCCF : " + group.getCard() + " | " + player.getName() + " ishonmadi";
         bar.executeAll(group, text);
