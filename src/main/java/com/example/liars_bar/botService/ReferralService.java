@@ -32,6 +32,8 @@ public class ReferralService {
 
         if (pS < group.getPC() && group.getLI() == -1) {
             player.setChances(new Random().nextInt(6) + 1);
+            int index = findIndex(group);
+            player.setIndex(index);
             player.setPlayerState(ADD);
             player.setGroup(group);
             group.addPlayer(player);
@@ -45,7 +47,6 @@ public class ReferralService {
             );
 
             if (pS + 1 == group.getPC()) {
-                groupService.updateTurn(group);
                 group.getPlayersList().forEach(
                         p -> {
                             String t = "Tugmani bosing!";
@@ -60,5 +61,17 @@ public class ReferralService {
                 );
             }
         }
+    }
+
+    public int findIndex(Group group) {
+
+        List<Integer> indices = group.getPlayersListIndex();
+
+        for (int i = 0; i < group.getPC(); i++) {
+            if (!indices.contains(i)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

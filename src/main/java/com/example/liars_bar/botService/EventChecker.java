@@ -39,7 +39,7 @@ public class EventChecker {
             if (player.getTemp().isEmpty()) {
                 player.getTemp().add(0);
             }
-            throwCommand.execute(player);
+            throwCommand.execute(player, null);
             return;
         }
         if (action == LIE) {

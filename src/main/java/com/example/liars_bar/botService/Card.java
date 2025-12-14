@@ -61,7 +61,7 @@ public class Card {
     private static String listCard(List<Character> cards) {
         StringBuilder text = new StringBuilder("\uD83D\uDD39\uD83D\uDD38\uD83D\uDD39 ");
         for (char c : cards) {
-            text.append(" [").append(c).append("] ");
+            text.append(" ").append(c).append(" ");
         }
         return text + " \uD83D\uDD39\uD83D\uDD38\uD83D\uDD39";
     }

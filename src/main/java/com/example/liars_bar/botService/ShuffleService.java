@@ -5,6 +5,7 @@ import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.service.EventService;
 import com.example.liars_bar.service.GroupService;
+import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import static com.example.liars_bar.model.PlayerState.GAME;
 public class ShuffleService {
 
     private final GroupService groupService;
+    private final PlayerService playerService;
     private final Bar bar;
     private final Card card;
     private final EventService eventService;
@@ -37,7 +39,7 @@ public class ShuffleService {
             System.err.println("Player must have Shuffle event:" + player.getId());
             return;
         }
-        player.setEvent(new Event());
+        playerService.resetEvent(player);
         eventService.delete(event);
 
         group.setThrowCards(new ArrayList<>());
@@ -66,7 +68,7 @@ public class ShuffleService {
                 card.executeE(p);
             }
         }
-
+        player.setEvent(new Event());
         groupService.save(group);
     }
 }

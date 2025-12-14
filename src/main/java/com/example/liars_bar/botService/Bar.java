@@ -36,7 +36,7 @@ public class Bar {
 
         StringBuilder text = new StringBuilder("\uD83D\uDD38 : " + group.getCard());
         int size = group.getThrowCards().size();
-        long li = group.getLI();
+        int li = group.getLI();
         String name = "";
         if (size != 0) {
             if (li != -1) name = group.getPlayer(li).getName(); //TODO fix

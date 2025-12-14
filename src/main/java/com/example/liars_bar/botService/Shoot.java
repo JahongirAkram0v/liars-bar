@@ -29,8 +29,7 @@ public class Shoot {
     public void execute(Player player) {
         Group group = player.getGroup();
         Event event = player.getEvent();
-        player.setEvent(null);
-        playerService.save(player);
+        playerService.resetEvent(player);
         eventService.delete(event);
 
         bar.executeAll(group, player.getName());
@@ -59,19 +58,12 @@ public class Shoot {
 
             card.executeAll(group, "omadi bor ekan");
         }
-        groupService.updateTurn(group);
-        Optional<Player> optionalPlayer = group.currentPlayer();
-        if (optionalPlayer.isEmpty()) {
-            System.err.println("shoot: player not found which lpi");
-            return;
-        }
-        Player p = optionalPlayer.get();
 
         Event newEvent = Event.builder()
                 .action(SHUFFLE)
                 .endTime(Event.getMin())
                 .build();
-        p.setEvent(newEvent);
-        playerService.save(p);
+        player.setEvent(newEvent);
+        playerService.save(player);
     }
 }
