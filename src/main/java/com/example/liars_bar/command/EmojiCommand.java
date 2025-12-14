@@ -18,7 +18,7 @@ public class EmojiCommand {
 
     public void execute(Player player, int index) {
         Group group = player.getGroup();
-        if (group.getTurn() != player.getId()) {
+        if (group.getTurn() == player.getId()) {
             return;
         }
         if (player.getEM() == index) {
