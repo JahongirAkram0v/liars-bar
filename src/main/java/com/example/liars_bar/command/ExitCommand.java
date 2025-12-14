@@ -31,7 +31,7 @@ public class ExitCommand {
                 }
         );
 
-        group.removePlayer(player.getId());
+        group.removePlayer(player.getIndex());
         playerService.reset(player);
         if (group.getPlayers().isEmpty()) {
             groupService.delete(group);

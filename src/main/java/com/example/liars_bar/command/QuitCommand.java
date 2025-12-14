@@ -30,6 +30,10 @@ public class QuitCommand {
 
         Player pTemp = group.currentPlayer();
         Event event = pTemp.getEvent();
+        if (event == null) {
+            System.err.println("Player must have Quit event:" + player.getId());
+            return;
+        }
         pTemp.setEvent(null);
         playerService.save(pTemp);
         eventService.delete(event);
