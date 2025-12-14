@@ -29,23 +29,17 @@ public class GroupService {
 
     public void updateTurn(Group group) {
 
-        List<Long> indices = group.getPlayers().values().stream()
+        List<Integer> indices = group.getPlayers().values().stream()
                 .filter(Player::isActive)
                 .filter(Player::isAlive)
-                .map(Player::getId)
+                .map(Player::getIndex)
                 .sorted()
                 .toList();
 
-        if (indices.isEmpty()) {
-            System.err.println("update Turn is empty");
-            System.err.println("--------------------");
-            return;
-        }
-
-        Long current = group.getTurn();
-        for (Long id : indices) {
-            if (current < id) {
-                group.setTurn(id);
+        int current = group.getTurn();
+        for (int i = current+1; i<group.getPC(); i++) {
+            if (indices.contains(i)) {
+                group.setTurn(i);
                 save(group);
                 return;
             }

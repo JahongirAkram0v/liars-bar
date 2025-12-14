@@ -18,6 +18,8 @@ public class Player {
     @Id
     private Long id;
 
+    private int index;
+
     @Column(length = 30)
     private String name;
 

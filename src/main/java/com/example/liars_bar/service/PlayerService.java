@@ -21,10 +21,17 @@ public class PlayerService {
         playerRepo.save(player);
     }
 
+    public void resetEvent(Player player) {
+        player.setEvent(null);
+        playerRepo.save(player);
+    }
+
     public void reset(Player player) {
-        save(Player.builder()
-                .id(player.getId())
-                .name(player.getName())
-                .build());
+        playerRepo.save(
+                Player.builder()
+                        .id(player.getId())
+                        .name(player.getName())
+                        .build()
+        );
     }
 }

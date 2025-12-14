@@ -34,8 +34,7 @@ public class QuitCommand {
             System.err.println("Player must have Quit event:" + player.getId());
             return;
         }
-        pTemp.setEvent(null);
-        playerService.save(pTemp);
+        playerService.resetEvent(pTemp);
         eventService.delete(event);
 
         int index = player.getIndex();

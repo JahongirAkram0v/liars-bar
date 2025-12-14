@@ -38,8 +38,7 @@ public class LiarCommand {
             System.err.println("Player must have Liar event:" + player.getId());
             return;
         }
-        player.setEvent(null);
-        playerService.save(player);
+        playerService.resetEvent(player);
         eventService.delete(event);
 
         String special = special(group.getThrowCards(), group.getCard());

@@ -90,12 +90,11 @@ public class Consumer {
             countCommand.execute(player, count, messageId);
             return;
         }
+        if (player.getPlayerState() != GAME) {
+            answerProducer.response(Utils.error(callbackQueryId, "Something went wrong!"));
+            return;
+        }
         if (command.startsWith("e")) {
-
-            if (player.getPlayerState() != GAME) {
-                answerProducer.response(Utils.error(callbackQueryId, "Something went wrong!"));
-                return;
-            }
             int count = command.charAt(1) - '0';
             emojiCommand.execute(player, count);
             return;
@@ -104,7 +103,7 @@ public class Consumer {
             case "bar" -> barCommand.execute(player, messageId);
             case "card" -> cardCommand.execute(player, messageId);
             case "l" -> liarCommand.execute(player);
-            case "t" -> throwCommand.execute(player);
+            case "t" -> throwCommand.execute(player, callbackQueryId);
             default -> chooseCommand.execute(player, Integer.parseInt(command));
         }
 

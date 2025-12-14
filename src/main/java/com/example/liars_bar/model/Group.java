@@ -19,12 +19,12 @@ public class Group {
     private String id;
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    @MapKey(name = "id")
+    @MapKey(name = "index")
     @Builder.Default
-    private Map<Long, Player> players = new HashMap<>();
+    private Map<Integer, Player> players = new HashMap<>();
 
     @Builder.Default
-    private Long lI = -1L;
+    private int lI = -1;
 
     private Character card;
 
@@ -34,7 +34,7 @@ public class Group {
     private int pC;
 
     @Builder.Default
-    private Long turn = 0L;
+    private int turn = 0;
 
     public List<Player> getPlayersList() {
         return players.values().stream()
@@ -42,22 +42,24 @@ public class Group {
                 .toList();
     }
 
-    public List<Long> getPlayersListIndex() {
+    public boolean isAlone() {
+        return players.values().stream().filter(Player::isAlive).count() == 1;
+    }
+
+    public boolean isActiveAlone() {
+        return players.values().stream().filter(Player::isActive).filter(Player::isAlive).count() == 1;
+    }
+
+    public List<Integer> getPlayersListIndex() {
         return players.keySet().stream()
-                .sorted()
                 .toList();
     }
 
-    public Optional<Player> currentPlayer() {
-        Player player = players.get(turn);
-        if (player == null) {
-            System.err.println(turn+"\n"+this.getPlayersListIndex());
-            System.err.println("============");
-        }
-        return Optional.ofNullable(player);
+    public Player currentPlayer() {
+        return players.get(turn);
     }
 
-    public Player getPlayer(Long index) {
+    public Player getPlayer(int index) {
         return players.get(index);
     }
 
@@ -66,12 +68,12 @@ public class Group {
     }
 
     public void addPlayer(Player player) {
-        players.put(player.getId(), player);
+        players.put(player.getIndex(), player);
         player.setGroup(this);
     }
 
-    public void removePlayer(Long id) {
-        Player player = players.remove(id);
+    public void removePlayer(int index) {
+        Player player = players.remove(index);
         if (player != null) {
             player.setGroup(null);
         }
