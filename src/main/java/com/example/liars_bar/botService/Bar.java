@@ -46,7 +46,7 @@ public class Bar {
         for (Player p: group.getPlayersList()) {
             text.append(getANC(p))
                     .append(" - (" ).append(p.getAttempt()).append("/6) " )
-                    .append(getA(p.getId(), group.getTurn()))
+                    .append(getA(p.getIndex(), group.getTurn()))
                     .append(" | \uD83C\uDCCFx").append(p.getCards().size())
                     .append(getE(p))
                     .append("\n");
@@ -59,7 +59,7 @@ public class Bar {
         return " /" + Utils.emojis.get(p.getEM());
     }
 
-    private String getA(long pIndex, long pTIndex) {
+    private String getA(int pIndex, int pTIndex) {
         return pIndex == pTIndex ? "\uD83D\uDC7E" : "";
     }
 

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -32,7 +31,7 @@ public class ThrowCommand {
     public void execute(Player player, String queryId) {
         Group group = player.getGroup();
 
-        if (group.getTurn() == player.getIndex()) {
+        if (group.getTurn() != player.getIndex()) {
             return;
         }
 

@@ -35,12 +35,14 @@ public class ShuffleService {
         Player player = group.currentPlayer();
 
         Event event = player.getEvent();
-        if (event == null) {
+        if (event == null && group.getLI() != -1) {
             System.err.println("Player must have Shuffle event:" + player.getId());
             return;
         }
-        playerService.resetEvent(player);
-        eventService.delete(event);
+        if (event != null) {
+            playerService.resetEvent(player);
+            eventService.delete(event);
+        }
 
         group.setThrowCards(new ArrayList<>());
 
@@ -69,6 +71,7 @@ public class ShuffleService {
             }
         }
         player.setEvent(new Event());
+        playerService.save(player);
         groupService.save(group);
     }
 }

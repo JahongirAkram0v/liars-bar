@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Objects;
 
 import static com.example.liars_bar.model.Action.LIE;
 
@@ -29,7 +28,7 @@ public class LiarCommand {
     public void execute(Player player) {
         Group group = player.getGroup();
 
-        if (group.getTurn() == player.getIndex()) {
+        if (group.getTurn() != player.getIndex()) {
             return;
         }
 
@@ -55,7 +54,6 @@ public class LiarCommand {
 
         group.getPlayersList().forEach(t -> t.setActive(true));
         groupService.save(group);
-        groupService.updateTurn(group);
 
         String text = "\uD83C\uDCCF : " + group.getCard() + " | " + player.getName() + " ishonmadi";
         bar.executeAll(group, text);

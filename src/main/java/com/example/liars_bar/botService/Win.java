@@ -24,7 +24,7 @@ public class Win {
     public void execute(Player player) {
         Group group = player.getGroup();
         Event event = player.getEvent();
-        playerService.reset(player);
+        playerService.resetEvent(player);
         eventService.delete(event);
 
         bar.executeAll(group, player.getName());
@@ -33,10 +33,10 @@ public class Win {
         String text = "O'yinni qayta boshlash uchun /start ni bosing!";
         group.getPlayersList().forEach(
                 p -> {
-                    answerProducer.response(Utils.text(player.getId(), text));
-                    playerService.reset(player);
+                    answerProducer.response(Utils.text(p.getId(), text));
+                    playerService.reset(p);
                 }
         );
-        groupService.delete(group);//hali ham muammo bor
+        groupService.delete(group);
     }
 }

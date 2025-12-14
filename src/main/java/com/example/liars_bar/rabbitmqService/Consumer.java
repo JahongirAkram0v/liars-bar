@@ -4,6 +4,7 @@ import com.example.liars_bar.botService.ReferralService;
 import com.example.liars_bar.botService.Utils;
 import com.example.liars_bar.command.*;
 import com.example.liars_bar.model.Player;
+import com.example.liars_bar.model.PlayerState;
 import com.example.liars_bar.model.Request;
 import com.example.liars_bar.model.RequestCallback;
 import com.example.liars_bar.service.PlayerService;
@@ -14,8 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 import static com.example.liars_bar.config.RabbitQueue.*;
-import static com.example.liars_bar.model.PlayerState.GAME;
-import static com.example.liars_bar.model.PlayerState.START;
+import static com.example.liars_bar.model.PlayerState.*;
 
 @Service
 @RequiredArgsConstructor
@@ -79,34 +79,48 @@ public class Consumer {
             return;
         }
         Player player = optionalPlayer.get();
+        PlayerState state = player.getPlayerState();
 
-        if (command.startsWith("x")) {
-
-            if (player.getPlayerState() != START) {
-                answerProducer.response(Utils.error(callbackQueryId, "Something went wrong!"));
+        if (state == START) {
+            if (command.startsWith("x")) {
+                int count = command.charAt(1) - '0';
+                countCommand.execute(player, count, messageId);
                 return;
             }
-            int count = command.charAt(1) - '0';
-            countCommand.execute(player, count, messageId);
-            return;
-        }
-        if (player.getPlayerState() != GAME) {
-            answerProducer.response(Utils.error(callbackQueryId, "Something went wrong!"));
-            return;
-        }
-        if (command.startsWith("e")) {
-            int count = command.charAt(1) - '0';
-            emojiCommand.execute(player, count);
-            return;
-        }
-        switch (command) {
-            case "bar" -> barCommand.execute(player, messageId);
-            case "card" -> cardCommand.execute(player, messageId);
-            case "l" -> liarCommand.execute(player);
-            case "t" -> throwCommand.execute(player, callbackQueryId);
-            default -> chooseCommand.execute(player, Integer.parseInt(command));
         }
 
+        if (state == ADD) {
+            if (command.equals("bar")) {
+                barCommand.execute(player, messageId);
+                return;
+            }
+            if (command.equals("card")) {
+                cardCommand.execute(player, messageId);
+                return;
+            }
+        }
+
+        if (state == GAME) {
+            if (command.startsWith("e")) {
+                int count = command.charAt(1) - '0';
+                emojiCommand.execute(player, count);
+                return;
+            }
+            if (command.equals("l")) {
+                liarCommand.execute(player);
+                return;
+            }
+            if (command.equals("t")) {
+                throwCommand.execute(player, callbackQueryId);
+                return;
+            }
+            if ("0,1,2,3,4".contains(command)) {
+                chooseCommand.execute(player, Integer.parseInt(command));
+                return;
+            }
+        }
+
+        answerProducer.response(Utils.error(callbackQueryId, "SomeThing went wrong!!"));
     }
 
 }

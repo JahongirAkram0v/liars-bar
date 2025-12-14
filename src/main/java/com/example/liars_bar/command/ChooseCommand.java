@@ -23,7 +23,7 @@ public class ChooseCommand {
     public void execute(Player player, int c) {
         Group group = player.getGroup();
 
-        if (group.getTurn() == player.getIndex()) {
+        if (group.getTurn() != player.getIndex()) {
             return;
         }
 

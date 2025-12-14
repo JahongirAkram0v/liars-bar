@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.example.liars_bar.model.Action.SHUFFLE;
 import static com.example.liars_bar.model.Action.WIN;
@@ -58,12 +57,13 @@ public class Shoot {
 
             card.executeAll(group, "omadi bor ekan");
         }
-
+        groupService.updateTurn(group);
+        Player pTemp = group.currentPlayer();
         Event newEvent = Event.builder()
                 .action(SHUFFLE)
                 .endTime(Event.getMin())
                 .build();
-        player.setEvent(newEvent);
-        playerService.save(player);
+        pTemp.setEvent(newEvent);
+        playerService.save(pTemp);
     }
 }
