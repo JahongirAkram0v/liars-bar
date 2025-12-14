@@ -23,9 +23,6 @@ public class Win {
 
     public void execute(Player player) {
         Group group = player.getGroup();
-        Event event = player.getEvent();
-        playerService.reset(player);
-        eventService.delete(event);
 
         bar.executeAll(group, player.getName());
         card.executeAll(group, "g'olib bo'ldi");
@@ -37,6 +34,8 @@ public class Win {
                     playerService.reset(player);
                 }
         );
+        Event event = player.getEvent();
+        eventService.delete(event);
         groupService.delete(group);
     }
 }
