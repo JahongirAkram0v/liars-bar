@@ -28,9 +28,9 @@ public class ThrowCommand {
 
     public void execute(Player player) {
         Group group = player.getGroup();
-        boolean alivePlayersCount = group.getPlayers().values().stream().filter(Player::isAlive).count() == 1;
+        boolean isAlone = group.isAlone();
 
-        if (alivePlayersCount && player.getTemp().isEmpty()) {
+        if (isAlone && player.getTemp().isEmpty()) {
             liarCommand.execute(player);
             return;
         }
