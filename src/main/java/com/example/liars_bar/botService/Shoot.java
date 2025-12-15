@@ -12,6 +12,7 @@ import java.util.List;
 
 import static com.example.liars_bar.model.Action.SHUFFLE;
 import static com.example.liars_bar.model.Action.WIN;
+import static com.example.liars_bar.model.Which.STICKER;
 
 @Component
 @RequiredArgsConstructor
@@ -36,8 +37,8 @@ public class Shoot {
             player.setAlive(false);
             player.setActive(false);
 
-            card.executeAllText(group, "...");
-            card.executeSticker(group, "CAACAgIAAxkBAAISJ2k_2HedMrAy56rTSUmmC95548JSAAILhgACTcwAAUpZD2FuI4n8nzYE");
+            card.executeAllText(group, ".");
+            card.executeSticker(group, "CAACAgIAAxkBAAISJ2k_2HedMrAy56rTSUmmC95548JSAAILhgACTcwAAUpZD2FuI4n8nzYE", STICKER);
 
             List<Player> alivePlayers = group.getPlayers().values().stream()
                     .filter(Player::isAlive)
@@ -57,8 +58,8 @@ public class Shoot {
         } else {
             player.setAttempt(player.getAttempt() + 1);
 
-            card.executeAllText(group, "...");
-            card.executeSticker(group, "CAACAgIAAxkBAAISKGk_2I14E9JWUjIAAUKKvNH5LbDIbgAChIoAAkqCAAFKc183VZPcPpA2BA");
+            card.executeAllText(group, ".");
+            card.executeSticker(group, "CAACAgIAAxkBAAISKGk_2I14E9JWUjIAAUKKvNH5LbDIbgAChIoAAkqCAAFKc183VZPcPpA2BA", STICKER);
         }
         groupService.updateTurn(group);
         Event newEvent = Event.builder()

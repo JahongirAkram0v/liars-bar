@@ -35,7 +35,7 @@ public class ThrowCommand {
 
         boolean isActiveAlone = group.isActiveAlone();
         if (isActiveAlone && player.getTemp().isEmpty()) {
-            liarCommand.execute(player);
+            liarCommand.execute(player, queryId);
             return;
         }
 

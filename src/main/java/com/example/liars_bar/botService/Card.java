@@ -2,6 +2,7 @@ package com.example.liars_bar.botService;
 
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
+import com.example.liars_bar.model.Which;
 import com.example.liars_bar.rabbitmqService.AnswerProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -58,12 +59,13 @@ public class Card {
         );
     }
 
-    public void executeSticker(Group group, String fileId) {
+    public void executeSticker(Group group, String fileId, Which which) {
         group.getPlayers().values().forEach(
                 p -> answerProducer.response(
                         Utils.sticker(
                                 p.getId(),
-                                fileId
+                                fileId,
+                                which
                         )
                 )
         );

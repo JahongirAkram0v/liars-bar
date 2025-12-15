@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.example.liars_bar.model.Which.NOTHING;
-import static com.example.liars_bar.model.Which.STICKER;
 
 public class Utils {
 
@@ -38,14 +37,14 @@ public class Utils {
         );
     }
 
-    public static Response sticker(Long id, String fileId) {
+    public static Response sticker(Long id, String fileId, Which which) {
         return new Response(
                 Map.of(
                         "chat_id", id,
                         "sticker", fileId
                 ),
                 "sendSticker",
-                STICKER
+                which
         );
     }
 

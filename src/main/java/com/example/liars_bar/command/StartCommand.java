@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
-import static com.example.liars_bar.model.Which.NOTHING;
-
 @Component
 @RequiredArgsConstructor
 public class StartCommand {

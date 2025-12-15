@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class ChooseCommand {
     private final LiarCommand liarCommand;
     private final GroupService groupService;
 
-    public void execute(Player player, int c) {
+    public void execute(Player player, int c, String queryId) {
         Group group = player.getGroup();
 
         if (group.getTurn() != player.getIndex()) {
@@ -29,7 +28,7 @@ public class ChooseCommand {
 
         boolean isActiveAlone = group.isActiveAlone();
         if (isActiveAlone) {
-            liarCommand.execute(player);
+            liarCommand.execute(player, queryId);
             return;
         }
 

@@ -94,7 +94,7 @@ public class Consumer {
                 return;
             }
             if (command.equals("l")) {
-                liarCommand.execute(player);
+                liarCommand.execute(player, callbackQueryId);
                 return;
             }
             if (command.equals("t")) {
@@ -102,7 +102,7 @@ public class Consumer {
                 return;
             }
             if ("0,1,2,3,4".contains(command)) {
-                chooseCommand.execute(player, Integer.parseInt(command));
+                chooseCommand.execute(player, Integer.parseInt(command), callbackQueryId);
                 return;
             }
         }

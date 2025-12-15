@@ -2,12 +2,13 @@ package com.example.liars_bar.command;
 
 import com.example.liars_bar.botService.Bar;
 import com.example.liars_bar.botService.Card;
+import com.example.liars_bar.botService.Utils;
 import com.example.liars_bar.model.Event;
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
+import com.example.liars_bar.rabbitmqService.AnswerProducer;
 import com.example.liars_bar.service.EventService;
 import com.example.liars_bar.service.GroupService;
-import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,13 +23,18 @@ public class LiarCommand {
     private final GroupService groupService;
     private final Bar bar;
     private final Card card;
-    private final PlayerService playerService;
     private final EventService eventService;
+    private final AnswerProducer answerProducer;
 
-    public void execute(Player player) {
+    public void execute(Player player, String queryId) {
         Group group = player.getGroup();
 
         if (group.getTurn() != player.getIndex()) {
+            return;
+        }
+
+        if (group.getThrowCards().isEmpty()) {
+            answerProducer.response(Utils.error(queryId, "Press card"));
             return;
         }
 
