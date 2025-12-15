@@ -80,12 +80,13 @@ public class MyBot extends TelegramWebhookBot {
             }
             return null;
         }
-
+        /*
+        *
         if (update.hasMessage() && update.getMessage().hasSticker()) {
             var sticker = update.getMessage().getSticker();
             System.out.println(sticker.getFileId());
         }
-
+        */
 
 
         return null;
