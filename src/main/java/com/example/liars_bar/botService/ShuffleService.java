@@ -45,7 +45,7 @@ public class ShuffleService {
             groupService.resetEvent(group);
             eventService.delete(event);
             if (player.getSticker() != -1) {
-                group.getPlayers().values().forEach(
+                group.getPlayers().values().stream().filter(p -> p.getSticker() != -1).forEach(
                         p -> answerProducer.response(Utils.delete(p.getId(), p.getSticker()))
                 );
             }
