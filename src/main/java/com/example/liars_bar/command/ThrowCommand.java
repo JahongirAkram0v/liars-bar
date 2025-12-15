@@ -9,7 +9,6 @@ import com.example.liars_bar.model.Player;
 import com.example.liars_bar.rabbitmqService.AnswerProducer;
 import com.example.liars_bar.service.EventService;
 import com.example.liars_bar.service.GroupService;
-import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +20,6 @@ import java.util.List;
 public class ThrowCommand {
 
     private final GroupService groupService;
-    private final PlayerService playerService;
     private final Bar bar;
     private final Card card;
     private final EventService eventService;
@@ -46,12 +44,12 @@ public class ThrowCommand {
             return;
         }
 
-        Event event = player.getEvent();
+        Event event = group.getEvent();
         if (event == null) {
             System.err.println("Player must have Throw event:" + player.getId());
             return;
         }
-        playerService.resetEvent(player);
+        groupService.resetEvent(group);
         eventService.delete(event);
 
         List<Character> playerCards = new ArrayList<>();
@@ -69,17 +67,17 @@ public class ThrowCommand {
         group.setLI(player.getIndex());
         groupService.updateTurn(group);
         Player p = group.currentPlayer();
-        p.setEvent(new Event());
+        group.setEvent(new Event());
 
         bar.execute(group);
-        card.executeB(p);
+        card.executeBid(p);
 
         if (playerCards.isEmpty()) {
             player.setActive(false);
             String text = "Sizda karta qolmadi, o'yinni kuzating.";
-            card.execute(player, text);
+            card.executeText(player, text);
         } else {
-            card.executeE(player);
+            card.executeEmoji(player);
         }
 
         groupService.save(group);

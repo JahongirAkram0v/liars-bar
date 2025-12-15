@@ -29,8 +29,6 @@ public class Consumer {
     private final ExitCommand exitCommand;
     private final QuitCommand quitCommand;
     private final CountCommand countCommand;
-    private final BarCommand barCommand;
-    private final CardCommand cardCommand;
     private final LiarCommand liarCommand;
     private final ThrowCommand throwCommand;
     private final ChooseCommand chooseCommand;
@@ -85,17 +83,6 @@ public class Consumer {
             if (command.startsWith("x")) {
                 int count = command.charAt(1) - '0';
                 countCommand.execute(player, count, messageId);
-                return;
-            }
-        }
-
-        if (state == ADD) {
-            if (command.equals("bar")) {
-                barCommand.execute(player, messageId);
-                return;
-            }
-            if (command.equals("card")) {
-                cardCommand.execute(player, messageId);
                 return;
             }
         }

@@ -27,10 +27,6 @@ public class Player {
     @Builder.Default
     private PlayerState playerState = PlayerState.START;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "event_id")
-    private Event event;
-
     @ManyToOne
     @JoinColumn(name = "group_id")
     private Group group;
@@ -49,11 +45,12 @@ public class Player {
     @Builder.Default
     private int eM = 0;
 
-    @Builder.Default
-    private int bar = -1;
+    private int bar;
+
+    private int card;
 
     @Builder.Default
-    private int card = -1;
+    private int sticker = -1;
 
     @Builder.Default
     private boolean isAlive = true;

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 import static com.example.liars_bar.model.PlayerState.ADD;
+import static com.example.liars_bar.model.Which.*;
 
 @Component
 @RequiredArgsConstructor
@@ -39,24 +40,20 @@ public class ReferralService {
             group.addPlayer(player);
             groupService.save(group);
 
-            group.getPlayersList().forEach(
+            group.getPlayers().values().forEach(
                     p -> {
                         String text = player.getName() + " qo'shildi. (" + (pS + 1) + "/" + group.getPC() + ")";
-                        answerProducer.response(Utils.text(p.getId(), text));
+                        answerProducer.response(Utils.text(p.getId(), text, NOTHING));
                     }
             );
 
             if (pS + 1 == group.getPC()) {
-                group.getPlayersList().forEach(
+                group.getPlayers().values().forEach(
                         p -> {
-                            String t = "Tugmani bosing!";
-                            answerProducer.response(
-                                    Utils.text(
-                                            p.getId(),
-                                            t,
-                                            List.of(List.of(Map.of("text", "⚡️⚡️⚡️", "callback_data", "bar")))
-                                    )
-                            );
+                            String bar = "O'yin yuklanmoqda ⌛️⏳";
+                            answerProducer.response(Utils.text(p.getId(), bar, BAR));
+                            String card = "Biroz vaqt talab qiladi ⏳⌛️";
+                            answerProducer.response(Utils.text(p.getId(), card, CARD));
                         }
                 );
             }

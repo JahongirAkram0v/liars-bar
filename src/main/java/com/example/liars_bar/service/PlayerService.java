@@ -21,11 +21,6 @@ public class PlayerService {
         playerRepo.save(player);
     }
 
-    public void resetEvent(Player player) {
-        player.setEvent(null);
-        playerRepo.save(player);
-    }
-
     public void reset(Player player) {
         playerRepo.save(
                 Player.builder()

@@ -23,6 +23,10 @@ public class Group {
     @Builder.Default
     private Map<Integer, Player> players = new HashMap<>();
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "event_id")
+    private Event event;
+
     @Builder.Default
     private int lI = -1;
 

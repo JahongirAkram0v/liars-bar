@@ -26,7 +26,7 @@ public class Event {
     Instant endTime = Instant.now().plusSeconds(35);
 
     @OneToOne(mappedBy = "event")
-    private Player player;
+    private Group group;
 
     public static Instant getMin() {
         return Instant.now().plusSeconds(5);

@@ -14,7 +14,7 @@ public class Card {
 
     private final AnswerProducer answerProducer;
 
-    public void executeB(Player player) {
+    public void executeBid(Player player) {
         String text = "\uD83D\uDD39\uD83D\uDD39\uD83D\uDD39 Sizning yurishingiz \uD83D\uDD39\uD83D\uDD39\uD83D\uDD39";
         answerProducer.response(
                 Utils.editText(
@@ -25,7 +25,7 @@ public class Card {
                 )
         );
     }
-    public void executeE(Player player) {
+    public void executeEmoji(Player player) {
         answerProducer.response(
                 Utils.editText(
                         player.getId(),
@@ -36,7 +36,7 @@ public class Card {
         );
     }
 
-    public void execute(Player player, String text) {
+    public void executeText(Player player, String text) {
         answerProducer.response(
                 Utils.editText(
                         player.getId(),
@@ -46,13 +46,24 @@ public class Card {
         );
     }
 
-    public void executeAll(Group group, String text) {
-        group.getPlayersList().forEach(
+    public void executeAllText(Group group, String text) {
+        group.getPlayers().values().forEach(
                 p -> answerProducer.response(
                         Utils.editText(
                                 p.getId(),
                                 text,
                                 p.getCard()
+                        )
+                )
+        );
+    }
+
+    public void executeSticker(Group group, String fileId) {
+        group.getPlayers().values().forEach(
+                p -> answerProducer.response(
+                        Utils.sticker(
+                                p.getId(),
+                                fileId
                         )
                 )
         );

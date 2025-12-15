@@ -1,11 +1,15 @@
 package com.example.liars_bar.botService;
 
 import com.example.liars_bar.model.Response;
+import com.example.liars_bar.model.Which;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.example.liars_bar.model.Which.NOTHING;
+import static com.example.liars_bar.model.Which.STICKER;
 
 public class Utils {
 
@@ -18,17 +22,41 @@ public class Utils {
                         "text", error,
                         "show_alert", true
                 ),
-                "answerCallbackQuery"
+                "answerCallbackQuery",
+                NOTHING
         );
     }
 
-    public static Response text(Long id, String text) {
+    public static Response delete(Long id, Integer messageId) {
+        return new Response(
+                Map.of(
+                        "chat_id", id,
+                        "message_id", messageId
+                ),
+                "deleteMessage",
+                NOTHING
+        );
+    }
+
+    public static Response sticker(Long id, String fileId) {
+        return new Response(
+                Map.of(
+                        "chat_id", id,
+                        "sticker", fileId
+                ),
+                "sendSticker",
+                STICKER
+        );
+    }
+
+    public static Response text(Long id, String text, Which which) {
         return new Response(
                 Map.of(
                         "chat_id", id,
                         "text", text
                 ),
-                "sendMessage"
+                "sendMessage",
+                which
         );
     }
 
@@ -39,7 +67,8 @@ public class Utils {
                         "text", text,
                         "reply_markup", Map.of("inline_keyboard", keyboard)
                 ),
-                "sendMessage"
+                "sendMessage",
+                NOTHING
         );
     }
 
@@ -50,7 +79,8 @@ public class Utils {
                         "message_id", messageId,
                         "text", text
                 ),
-                "editMessageText"
+                "editMessageText",
+                NOTHING
         );
     }
 
@@ -62,7 +92,8 @@ public class Utils {
                         "text", text,
                         "reply_markup", Map.of("inline_keyboard", keyboard)
                 ),
-                "editMessageText"
+                "editMessageText",
+                NOTHING
         );
     }
 

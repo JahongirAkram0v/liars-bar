@@ -9,6 +9,8 @@ import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import static com.example.liars_bar.model.Which.NOTHING;
+
 @Component
 @RequiredArgsConstructor
 public class ExitCommand {
@@ -21,13 +23,13 @@ public class ExitCommand {
 
         Group group = player.getGroup();
 
-        group.getPlayersList()
+        group.getPlayers().values()
                 .forEach(p -> {
                     String text = p.equals(player)
                             ? "Siz guruhni tark etdiniz. /start tugmasini bosing"
                             : player.getName() + " guruhni tark etdi.";
 
-                    answerProducer.response(Utils.text(p.getId(), text));
+                    answerProducer.response(Utils.text(p.getId(), text, NOTHING));
                 }
         );
 

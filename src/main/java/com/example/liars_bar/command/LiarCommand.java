@@ -32,12 +32,12 @@ public class LiarCommand {
             return;
         }
 
-        Event event = player.getEvent();
+        Event event = group.getEvent();
         if (event == null) {
             System.err.println("Player must have Liar event:" + player.getId());
             return;
         }
-        playerService.resetEvent(player);
+        groupService.resetEvent(group);
         eventService.delete(event);
 
         String special = special(group.getThrowCards(), group.getCard());
@@ -45,19 +45,18 @@ public class LiarCommand {
         boolean isLie = group.getThrowCards().stream().anyMatch(s -> s != group.getCard() && s != 'J');
         group.setTurn(isLie ? group.getLI(): group.getTurn());
 
-        Player p = group.currentPlayer();
         Event newEvent = Event.builder()
                 .action(LIE)
                 .endTime(Event.getMin())
                 .build();
-        p.setEvent(newEvent);
+        group.setEvent(newEvent);
 
-        group.getPlayersList().forEach(t -> t.setActive(true));
+        group.getPlayers().values().forEach(t -> t.setActive(true));
         groupService.save(group);
 
         String text = "\uD83C\uDCCF : " + group.getCard() + " | " + player.getName() + " ishonmadi";
         bar.executeAll(group, text);
-        card.executeAll(group, special);
+        card.executeAllText(group, special);
     }
 
     private String special(List<Character> throwCards, Character card) {

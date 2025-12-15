@@ -5,7 +5,6 @@ import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.service.EventService;
 import com.example.liars_bar.service.GroupService;
-import com.example.liars_bar.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,16 +19,16 @@ public class Shoot {
 
     private final Bar bar;
     private final Card card;
-    private final PlayerService playerService;
     private final GroupService groupService;
     private final EventService eventService;
 
 
-    public void execute(Player player) {
-        Group group = player.getGroup();
-        Event event = player.getEvent();
-        playerService.resetEvent(player);
+    public void execute(Group group) {
+
+        Event event = group.getEvent();
+        groupService.resetEvent(group);
         eventService.delete(event);
+        Player player = group.currentPlayer();
 
         bar.executeAll(group, player.getName());
 
@@ -37,33 +36,36 @@ public class Shoot {
             player.setAlive(false);
             player.setActive(false);
 
-            card.executeAll(group, "omadi yoq ekan");
+            card.executeAllText(group, "...");
+            card.executeSticker(group, "CAACAgIAAxkBAAISJ2k_2HedMrAy56rTSUmmC95548JSAAILhgACTcwAAUpZD2FuI4n8nzYE");
 
-            List<Player> alivePlayers = group.getPlayersList().stream()
+            List<Player> alivePlayers = group.getPlayers().values().stream()
                     .filter(Player::isAlive)
                     .toList();
             if (alivePlayers.size() == 1) {
-                Player p = alivePlayers.getFirst();
+
+                group.setTurn(alivePlayers.getFirst().getIndex());
+                groupService.updateTurn(group);
                 Event newEvent = Event.builder()
                         .action(WIN)
                         .endTime(Event.getMin())
                         .build();
-                p.setEvent(newEvent);
-                playerService.save(p);
+                group.setEvent(newEvent);
+                groupService.save(group);
                 return;
             }
         } else {
             player.setAttempt(player.getAttempt() + 1);
 
-            card.executeAll(group, "omadi bor ekan");
+            card.executeAllText(group, "...");
+            card.executeSticker(group, "CAACAgIAAxkBAAISKGk_2I14E9JWUjIAAUKKvNH5LbDIbgAChIoAAkqCAAFKc183VZPcPpA2BA");
         }
         groupService.updateTurn(group);
-        Player pTemp = group.currentPlayer();
         Event newEvent = Event.builder()
                 .action(SHUFFLE)
                 .endTime(Event.getMin())
                 .build();
-        pTemp.setEvent(newEvent);
-        playerService.save(pTemp);
+        group.setEvent(newEvent);
+        groupService.save(group);
     }
 }

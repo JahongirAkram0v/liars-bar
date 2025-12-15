@@ -13,7 +13,7 @@ public class Bar {
     private final AnswerProducer answerProducer;
 
     public void execute(Group group) {
-        group.getPlayersList().forEach(
+        group.getPlayers().values().forEach(
                 p -> answerProducer.response(
                         Utils.editText(p.getId(), getResult(group), p.getBar())
                 )
@@ -25,7 +25,7 @@ public class Bar {
     }
 
     public void executeAll(Group group, String text) {
-        group.getPlayersList().forEach(
+        group.getPlayers().values().forEach(
                 p -> answerProducer.response(
                         Utils.editText(p.getId(), text, p.getBar())
                 )

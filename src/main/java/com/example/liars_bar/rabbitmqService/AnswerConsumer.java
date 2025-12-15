@@ -16,6 +16,6 @@ public class AnswerConsumer {
 
     @RabbitListener(queues = RESPONSE_QUEUE)
     public void answerChat(Response response) {
-        sendService.send(response.body(), response.method());
+        sendService.send(response.body(), response.method(), response.which());
     }
 }

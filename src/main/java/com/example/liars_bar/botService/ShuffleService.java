@@ -3,6 +3,7 @@ package com.example.liars_bar.botService;
 import com.example.liars_bar.model.Event;
 import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
+import com.example.liars_bar.rabbitmqService.AnswerProducer;
 import com.example.liars_bar.service.EventService;
 import com.example.liars_bar.service.GroupService;
 import com.example.liars_bar.service.PlayerService;
@@ -22,6 +23,7 @@ public class ShuffleService {
     private final Bar bar;
     private final Card card;
     private final EventService eventService;
+    private final AnswerProducer answerProducer;
 
 
     private final List<Character> cards = Arrays.asList(
@@ -34,21 +36,26 @@ public class ShuffleService {
 
         Player player = group.currentPlayer();
 
-        Event event = player.getEvent();
+        Event event = group.getEvent();
         if (event == null && group.getLI() != -1) {
             System.err.println("Player must have Shuffle event:" + player.getId());
             return;
         }
         if (event != null) {
-            playerService.resetEvent(player);
+            groupService.resetEvent(group);
             eventService.delete(event);
+            if (player.getSticker() != -1) {
+                group.getPlayers().values().forEach(
+                        p -> answerProducer.response(Utils.delete(p.getId(), p.getSticker()))
+                );
+            }
         }
 
         group.setThrowCards(new ArrayList<>());
 
         Collections.shuffle(cards, new Random());
 
-        List<Player> alivePlayers = group.getPlayersList().stream()
+        List<Player> alivePlayers = group.getPlayers().values().stream()
                 .filter(Player::isAlive)
                 .toList();
 
@@ -65,12 +72,12 @@ public class ShuffleService {
         //card
         for (Player p: alivePlayers) {
             if (p.equals(player)) {
-                card.executeB(p);
+                card.executeBid(p);
             } else {
-                card.executeE(p);
+                card.executeEmoji(p);
             }
         }
-        player.setEvent(new Event());
+        group.setEvent(new Event());
         playerService.save(player);
         groupService.save(group);
     }

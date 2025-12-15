@@ -3,6 +3,7 @@ package com.example.liars_bar.botService;
 import com.example.liars_bar.command.ThrowCommand;
 import com.example.liars_bar.model.Action;
 import com.example.liars_bar.model.Event;
+import com.example.liars_bar.model.Group;
 import com.example.liars_bar.model.Player;
 import com.example.liars_bar.service.EventService;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +35,9 @@ public class EventChecker {
 
     private void process(Event event) {
         Action action = event.getAction();
-        Player player = event.getPlayer();
+        Group group = event.getGroup();
         if (action == THROW) {
+            Player player = group.currentPlayer();
             if (player.getTemp().isEmpty()) {
                 player.getTemp().add(0);
             }
@@ -43,15 +45,15 @@ public class EventChecker {
             return;
         }
         if (action == LIE) {
-            shoot.execute(player);
+            shoot.execute(group);
             return;
         }
         if (action == SHUFFLE) {
-            shuffleService.shuffle(player.getGroup());
+            shuffleService.shuffle(group);
             return;
         }
         if (action == WIN) {
-            win.execute(player);
+            win.execute(group);
         }
     }
 }

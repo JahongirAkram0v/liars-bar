@@ -28,20 +28,18 @@ public class QuitCommand {
 
         Group group = player.getGroup();
 
-        Player pTemp = group.currentPlayer();
-        Event event = pTemp.getEvent();
+        Event event = group.getEvent();
         if (event == null) {
             System.err.println("Player must have Quit event:" + player.getId());
             return;
         }
-        playerService.resetEvent(pTemp);
+        Player pTemp = group.currentPlayer();
+        groupService.resetEvent(group);
         eventService.delete(event);
 
         int index = player.getIndex();
-        if (pTemp.getIndex() != index) {
-            group.setTurn(index);
-            group.setLI(index);
-        }
+        group.setTurn(index);
+        group.setLI(index);
         group.removePlayer(index);
         playerService.reset(player);
         groupService.save(group);
@@ -52,25 +50,25 @@ public class QuitCommand {
                 .action(Action.SHUFFLE)
                 .endTime(Event.getMin())
                 .build();
-        p.setEvent(newEvent);
-        playerService.save(p);
+        group.setEvent(newEvent);
+        groupService.save(group);
 
         boolean isAlone = group.isAlone();
 
         bar.executeP(player, "guruhni tark etdingiz.");
-        card.execute(player, "Yangidan boshlash uchun /start ni bosing.");
+        card.executeText(player, "Yangidan boshlash uchun /start ni bosing.");
 
         if (isAlone) {
             Event win = Event.builder()
                     .action(WIN)
                     .endTime(Event.getMin())
                     .build();
-            p.setEvent(win);
-            playerService.save(p);
+            group.setEvent(win);
+            groupService.save(group);
         }
 
         bar.execute(group);
-        card.executeE(pTemp);
-        card.executeB(p);
+        card.executeEmoji(pTemp);
+        card.executeBid(p);
     }
 }

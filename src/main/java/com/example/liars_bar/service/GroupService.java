@@ -23,6 +23,11 @@ public class GroupService {
         groupRepo.save(group);
     }
 
+    public void resetEvent(Group group) {
+        group.setEvent(null);
+        groupRepo.save(group);
+    }
+
     public void delete(Group group) {
         groupRepo.delete(group);
     }
