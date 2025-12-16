@@ -1,5 +1,6 @@
 package com.example.liars_bar.botService;
 
+import com.example.liars_bar.command.LiarCommand;
 import com.example.liars_bar.command.ThrowCommand;
 import com.example.liars_bar.model.Action;
 import com.example.liars_bar.model.Event;
@@ -23,6 +24,7 @@ public class EventChecker {
     private final ThrowCommand throwCommand;
     private final Shoot shoot;
     private final ShuffleService shuffleService;
+    private final LiarCommand liarCommand;
     private final Win win;
 
     @Scheduled(fixedRate = 1_000)
@@ -38,6 +40,13 @@ public class EventChecker {
         Group group = event.getGroup();
         if (action == THROW) {
             Player player = group.currentPlayer();
+
+            boolean isActiveAlone = group.isActiveAlone();
+            if (isActiveAlone && player.getTemp().isEmpty()) {
+                liarCommand.execute(player, null);
+                return;
+            }
+
             if (player.getTemp().isEmpty()) {
                 player.getTemp().add(0);
             }

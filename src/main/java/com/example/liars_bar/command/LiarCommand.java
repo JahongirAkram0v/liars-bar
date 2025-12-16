@@ -34,6 +34,7 @@ public class LiarCommand {
         }
 
         if (group.getThrowCards().isEmpty()) {
+            if (queryId == null) System.err.println("EVENT checkerdan xatolik");
             answerProducer.response(Utils.error(queryId, "Press card"));
             return;
         }
