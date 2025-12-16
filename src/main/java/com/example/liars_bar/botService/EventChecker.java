@@ -24,7 +24,6 @@ public class EventChecker {
     private final Shoot shoot;
     private final ShuffleService shuffleService;
     private final Win win;
-    private final CleanUp cleanUp;
 
     @Scheduled(fixedRate = 1_000)
     public void checkEvents() {
@@ -55,10 +54,6 @@ public class EventChecker {
         }
         if (action == WIN) {
             win.execute(group);
-            return;
-        }
-        if (action == CLEAN) {
-            cleanUp.execute(group);
         }
     }
 }
