@@ -6,4 +6,6 @@ public enum Action {
     LIE,
     SHUFFLE,
     WIN,
+    CLEAN,
+
 }
