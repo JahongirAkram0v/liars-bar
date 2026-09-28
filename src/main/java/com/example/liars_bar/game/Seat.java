@@ -28,4 +28,9 @@ final class Seat {
     boolean alive = true;
     boolean active = true;
     CompletableFuture<Long> sticker;
+
+    /** Oxirgi yuborilgan matn/tugmalar: o'zgarmagan xabar qayta yuborilmaydi. */
+    String barText;
+    String cardText;
+    Object cardMarkup;
 }

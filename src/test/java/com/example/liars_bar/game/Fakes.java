@@ -76,7 +76,7 @@ final class Fakes {
         }
     }
 
-    /** Taymerlarni qo'lda ishga tushiradi. */
+    /** Faza taymerlarini qo'lda ishga tushiradi; 1 soniyadan qisqa kechikishlar darhol bajariladi. */
     static final class ManualScheduler implements GameScheduler {
 
         final class Task implements Cancellable {
@@ -98,7 +98,18 @@ final class Fakes {
         final List<Task> tasks = new ArrayList<>();
 
         @Override
-        public synchronized Cancellable schedule(Duration delay, Runnable task) {
+        public Cancellable schedule(Duration delay, Runnable task) {
+            if (delay.compareTo(Duration.ofSeconds(1)) < 0) {
+                task.run();
+                return () -> {
+                };
+            }
+            synchronized (this) {
+                return enqueue(delay, task);
+            }
+        }
+
+        private Cancellable enqueue(Duration delay, Runnable task) {
             Task t = new Task(delay, task);
             tasks.add(t);
             return t;

@@ -27,7 +27,7 @@ class GameServiceTest {
         store = new Fakes.Store();
         service = new GameService(tg, timers, store, new Random(42), new GameService.Settings(
                 "liars_bar_bot", "death", "survive", "win",
-                TURN, SHORT, Duration.ofSeconds(60), Duration.ofHours(1)));
+                TURN, SHORT, Duration.ofSeconds(60), Duration.ofHours(1), Duration.ofMillis(300)));
     }
 
     /** O'yin yaratadi, qolganlarni qo'shadi va birinchi raundni tarqatadi. */
@@ -248,6 +248,25 @@ class GameServiceTest {
 
         assertThat(game.phase).isEqualTo(Phase.REVEAL);
         assertThat(game.turn).isEqualTo(p2.index);
+    }
+
+    @Test
+    void unchangedMessagesAreNotSentAgain() {
+        Game game = startGame(1, 2);
+        long before = tg.log.stream().filter(o -> o.method().equals("edit")).count();
+
+        game.lock.lock();
+        try {
+            service.updateTable(game);
+            service.updateTable(game);
+        } finally {
+            game.lock.unlock();
+        }
+        service.onCard(1, 0, seat(game, 1).cardMessageId);
+        service.onCard(1, 0, seat(game, 1).cardMessageId); // tanlov bekor: klaviatura o'zgaradi
+
+        long after = tg.log.stream().filter(o -> o.method().equals("edit")).count();
+        assertThat(after - before).isEqualTo(2);
     }
 
     @Test

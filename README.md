@@ -28,6 +28,15 @@ Telegram ──HTTPS──▶ WebhookSecretFilter ─▶ WebhookController ─�
 - SQLite'da faqat o'yinchilar va statistika (`games_played`, `wins`) saqlanadi.
 - Server qayta ishga tushsa, davom etayotgan o'yinlar yo'qoladi.
 
+## Tezlik
+Bot tezligini Telegram limiti (~30 xabar/s) belgilaydi, shuning uchun asosiy e'tibor so'rovlar sonini kamaytirishga qaratilgan:
+- Bitta xabarning navbatda kutayotgan tahrirlari birlashtiriladi: faqat oxirgi holat yuboriladi.
+- Matni va tugmalari o'zgarmagan xabar qayta yuborilmaydi.
+- Emoji bosilganda stol xabari 300 ms ichida bir marta yangilanadi.
+- Tugma tasdig'i (`answerCallbackQuery`) navbat va limitni kutmasdan darhol yuboriladi.
+- Tomcat va navbatlar virtual threadlarda ishlaydi.
+- Spring AOT va CDS arxivi bilan ilova ~2 barobar tez ishga tushadi (o'lchovda 3.1 s → 1.5 s).
+
 ## Xavfsizlik
 - Webhook faqat to'g'ri `X-Telegram-Bot-Api-Secret-Token` sarlavhasi bilan qabul qilinadi. Sarlavha body o'qilishidan oldin, doimiy vaqtda (constant time) solishtiriladi.
 - Faqat shaxsiy chatlar qabul qilinadi. Callback ma'lumotlari qat'iy shablon bilan tekshiriladi.
@@ -46,6 +55,13 @@ openssl rand -hex 32        # TELEGRAM_WEBHOOK_SECRET uchun
 ```
 Sozlamalarni `.env` o'rniga muhit o'zgaruvchilari orqali ham berish mumkin.
 `DB_PATH` (standart qiymati `data/liars-bar.db`) doimiy diskda turishi kerak.
+
+### Docker
+```bash
+docker build -t liars-bar .
+docker run -d --env-file .env -p 8080:8080 -v liars-bar-data:/data liars-bar
+```
+Image AOT va CDS arxivi bilan yig'iladi, root bo'lmagan foydalanuvchi bilan ishlaydi, SQLite `/data` volume'da saqlanadi.
 
 ## Testlar
 ```bash
