@@ -1,6 +1,6 @@
 # Liar's Bar — Telegram bot
 
-2–4 kishilik "Liar's Bar" o'yini Telegram bot ko'rinishida. Spring Boot 3.5, Java 21, SQLite.
+2–4 kishilik "Liar's Bar" o'yini Telegram bot ko'rinishida. Spring Boot 3.5, Java 25, SQLite.
 
 ## O'yin qoidalari
 - Koloda: 6×A, 6×K, 6×Q, 2×J (joker). Har bir tirik o'yinchiga 5 tadan karta tarqatiladi.
