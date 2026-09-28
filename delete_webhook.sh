@@ -1,6 +1,9 @@
 #!/bin/bash
-# shellcheck disable=SC2046
-export $(grep -v '^#' .env | xargs)
+set -euo pipefail
+set -a
+# shellcheck disable=SC1091
+source .env
+set +a
 
-curl -s -X POST "$TELEGRAM_BASE_URL$TELEGRAM_BOT_TOKEN/deleteWebhook"
+curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook"
 echo
