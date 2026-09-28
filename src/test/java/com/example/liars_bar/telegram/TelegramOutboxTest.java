@@ -22,7 +22,7 @@ class TelegramOutboxTest {
 
     /** Birinchi so'rovni ushlab turadi, shu vaqtda keyingilari navbatda to'planadi. */
     private final TelegramApi api = new TelegramApi(new TelegramProperties(
-            "1:t", "liars_bar_bot", "/hook", "secret-0123456789abc", "https://api.telegram.org", null), mapper) {
+            "1:t", "liars_bar_bot", "https://api.telegram.org", true, null), mapper) {
         @Override
         public JsonNode call(String method, Map<String, Object> body) {
             calls.add(method + ":" + body.get("text"));

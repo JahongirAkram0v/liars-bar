@@ -14,7 +14,7 @@
 
 ## Arxitektura
 ```
-Telegram ──HTTPS──▶ WebhookSecretFilter ─▶ WebhookController ─▶ UpdateRouter
+Telegram ◀──getUpdates (long polling)── UpdatePoller ─▶ UpdateRouter
                                                                    │ (foydalanuvchi bo'yicha navbat)
                                                                    ▼
                         SQLite ◀── PlayerStore ◀──────────── GameService (xotirada, o'yin qulfi)
@@ -23,6 +23,8 @@ Telegram ──HTTPS──▶ WebhookSecretFilter ─▶ WebhookController ─�
                                                            TelegramOutbox    GameScheduler
                                                      (chat bo'yicha navbat, 30 msg/s, retry)
 ```
+- Update'lar long polling orqali olinadi: veb-server, ochiq port, domen va HTTPS sertifikat kerak emas.
+  Ilova ishga tushganda webhook avtomatik o'chiriladi. Bot bir vaqtda faqat bitta nusxada ishlashi kerak.
 - Faol o'yinlar xotirada saqlanadi. Bitta o'yinning barcha o'zgarishlari (tugma, `/quit`, taymer) shu o'yin qulfi ostida bajariladi.
 - Taymerlar token bilan himoyalangan: faza o'zgargach eski taymer ishlamaydi.
 - SQLite'da faqat o'yinchilar va statistika (`games_played`, `wins`) saqlanadi.
@@ -34,24 +36,22 @@ Bot tezligini Telegram limiti (~30 xabar/s) belgilaydi, shuning uchun asosiy e't
 - Matni va tugmalari o'zgarmagan xabar qayta yuborilmaydi.
 - Emoji bosilganda stol xabari 300 ms ichida bir marta yangilanadi.
 - Tugma tasdig'i (`answerCallbackQuery`) navbat va limitni kutmasdan darhol yuboriladi.
-- Tomcat va navbatlar virtual threadlarda ishlaydi.
+- Veb-server (Tomcat) yo'q, polling va navbatlar virtual threadlarda ishlaydi.
 - Spring AOT va CDS arxivi bilan ilova ~2 barobar tez ishga tushadi (o'lchovda 3.1 s → 1.5 s).
 
 ## Xavfsizlik
-- Webhook faqat to'g'ri `X-Telegram-Bot-Api-Secret-Token` sarlavhasi bilan qabul qilinadi. Sarlavha body o'qilishidan oldin, doimiy vaqtda (constant time) solishtiriladi.
+- Tashqaridan kiruvchi ulanish yo'q: bot faqat o'zi Telegram API'ga murojaat qiladi.
 - Faqat shaxsiy chatlar qabul qilinadi. Callback ma'lumotlari qat'iy shablon bilan tekshiriladi.
 - Eski xabarlardagi tugmalar va navbatdan tashqari bosishlar e'tiborsiz qoldiriladi.
 - Har bir foydalanuvchi uchun so'rovlar soni cheklangan. Kiruvchi va chiquvchi navbatlarning hajmi chegaralangan.
 - Lobbi 1 soatda o'chadi. Bir vaqtda ko'pi bilan 2000 ta o'yin bo'lishi mumkin.
-- Bot tokeni loglarga yozilmaydi. Xato javoblarida ichki ma'lumot qaytarilmaydi.
+- Bot tokeni loglarga yozilmaydi.
 - O'yin identifikatori UUID, tasodifiy sonlar `SecureRandom` bilan olinadi.
 
 ## Ishga tushirish
 ```bash
-cp .env.example .env        # qiymatlarni to'ldiring
-openssl rand -hex 32        # TELEGRAM_WEBHOOK_SECRET uchun
+cp .env.example .env        # TELEGRAM_BOT_TOKEN va TELEGRAM_BOT_USERNAME ni to'ldiring
 ./mvnw spring-boot:run
-./set_webhook.sh            # webhookni secret_token bilan ro'yxatdan o'tkazadi
 ```
 Sozlamalarni `.env` o'rniga muhit o'zgaruvchilari orqali ham berish mumkin.
 `DB_PATH` (standart qiymati `data/liars-bar.db`) doimiy diskda turishi kerak.
@@ -59,12 +59,13 @@ Sozlamalarni `.env` o'rniga muhit o'zgaruvchilari orqali ham berish mumkin.
 ### Docker
 ```bash
 docker build -t liars-bar .
-docker run -d --env-file .env -p 8080:8080 -v liars-bar-data:/data liars-bar
+docker run -d --restart unless-stopped --env-file .env -v liars-bar-data:/data liars-bar
 ```
 Image AOT va CDS arxivi bilan yig'iladi, root bo'lmagan foydalanuvchi bilan ishlaydi, SQLite `/data` volume'da saqlanadi.
 
 Konteyner kam resurs uchun sozlangan JVM bilan ishlaydi: SerialGC, 64 MB heap, faqat C1 kompilyator.
 O'lchovda xotira (RSS) bo'sh holatda 183 → 129 MB, yuklama ostida 231 → 145 MB ga tushdi.
+Long polling'ga o'tilgach (Tomcat'siz) bo'sh holatda 117 MB, ishga tushish ~1 s.
 O'yinlar juda ko'p bo'lsa, heap'ni oshiring:
 ```bash
 docker run -e JAVA_OPTS="-XX:+UseSerialGC -Xmx128m -XX:TieredStopAtLevel=1" ...
