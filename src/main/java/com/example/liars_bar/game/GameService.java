@@ -138,7 +138,7 @@ public class GameService {
         }
         game.lock.lock();
         try {
-            game.seats.put(0, new Seat(userId, name, 0, rollChances()));
+            game.put(new Seat(userId, name, 0, rollChances()));
             games.put(game.id, game);
             setTimer(game, settings.lobbyTtl(), this::expireLobby);
         } finally {
@@ -213,12 +213,12 @@ public class GameService {
         boolean joined = false;
         game.lock.lock();
         try {
-            if (!game.finished && game.phase == Phase.LOBBY && game.seats.size() < game.capacity) {
+            if (!game.finished && game.phase == Phase.LOBBY && game.seatCount() < game.capacity) {
                 int index = game.freeSeat();
-                game.seats.put(index, new Seat(userId, name, index, rollChances()));
+                game.put(new Seat(userId, name, index, rollChances()));
                 joined = true;
 
-                int count = game.seats.size();
+                int count = game.seatCount();
                 String text = Texts.joined(name, count, game.capacity);
                 game.seats().forEach(s -> tg.send(s.userId, text, null));
                 if (count == game.capacity) {
@@ -245,7 +245,7 @@ public class GameService {
         long token = ++game.startToken;
         setTimer(game, settings.startTimeout(), g -> abort(g, Texts.START_FAILED));
 
-        game.turn = game.seats.firstKey();
+        game.turn = game.firstSeat().index;
         deal(game);
         String table = Texts.table(game);
 
@@ -275,10 +275,10 @@ public class GameService {
     private void leaveLobby(Game game, Seat seat) {
         game.seats().forEach(s -> tg.send(s.userId,
                 s == seat ? Texts.YOU_LEFT_LOBBY : Texts.leftLobby(seat.name), null));
-        game.seats.remove(seat.index);
+        game.remove(seat);
         gameByPlayer.remove(seat.userId, game);
 
-        if (game.seats.isEmpty()) {
+        if (game.isEmpty()) {
             end(game);
             return;
         }
@@ -391,7 +391,7 @@ public class GameService {
         }
         char table = game.tableCard;
         boolean lie = game.pile.stream().anyMatch(c -> c != table && c != 'J');
-        game.turn = lie && game.seats.containsKey(game.lastThrower) ? game.lastThrower : caller.index;
+        game.turn = lie && game.seat(game.lastThrower) != null ? game.lastThrower : caller.index;
         game.seats().forEach(s -> s.active = s.alive);
         game.phase = Phase.REVEAL;
 
@@ -450,10 +450,10 @@ public class GameService {
         if (seat.sticker != null) {
             seat.sticker.thenAccept(id -> tg.delete(seat.userId, id));
         }
-        game.seats.remove(seat.index);
+        game.remove(seat);
         gameByPlayer.remove(seat.userId, game);
 
-        if (game.seats.isEmpty()) {
+        if (game.isEmpty()) {
             end(game);
             return;
         }
@@ -479,8 +479,11 @@ public class GameService {
         }
         updateTable(game);
         String text = Texts.leftLobby(seat.name);
-        game.seats().stream().filter(s -> s.alive)
-                .forEach(s -> editCard(s, text, null));
+        for (Seat s : game.seats()) {
+            if (s.alive) {
+                editCard(s, text, null);
+            }
+        }
     }
 
     // ------------------------------------------------------------------ helpers
