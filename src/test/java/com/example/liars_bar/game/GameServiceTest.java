@@ -52,7 +52,7 @@ class GameServiceTest {
         seat.cards = old.cards;
         seat.barMessageId = old.barMessageId;
         seat.cardMessageId = old.cardMessageId;
-        game.seats.put(seat.index, seat);
+        game.put(seat);
         return seat;
     }
 
@@ -324,7 +324,7 @@ class GameServiceTest {
 
         service.onQuit(3);
         assertThat(game.phase).isEqualTo(Phase.TURN);
-        assertThat(game.seats).hasSize(2);
+        assertThat(game.seatCount()).isEqualTo(2);
 
         service.onQuit(1);
         assertThat(game.phase).isEqualTo(Phase.FINISHING);
@@ -350,7 +350,7 @@ class GameServiceTest {
 
         assertThat(service.onCount(1, "P1", 3, 1)).isEqualTo(Texts.ALERT_ERROR);
         service.onStart(1, "P1", game.id); // o'z guruhiga qayta qo'shilmaydi
-        assertThat(game.seats).hasSize(1);
+        assertThat(game.seatCount()).isEqualTo(1);
 
         service.onQuit(1);
         assertThat(service.activeGames()).isZero();
@@ -378,14 +378,14 @@ class GameServiceTest {
         game.lock.lock();
         try {
             game.phase = Phase.STARTING;
-            game.seats.put(1, new Seat(2, "P2", 1, 3));
+            game.put(new Seat(2, "P2", 1, 3));
         } finally {
             game.lock.unlock();
         }
         service.onQuit(1);
 
         assertThat(game.phase).isEqualTo(Phase.LOBBY);
-        assertThat(game.seats).hasSize(1);
+        assertThat(game.seatCount()).isEqualTo(1);
         assertThat(timers.runNext()).isEqualTo(Duration.ofHours(1));
         assertThat(game.finished).isTrue();
     }

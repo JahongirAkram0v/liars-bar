@@ -1,26 +1,24 @@
 package com.example.liars_bar.game;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.NoSuchElementException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
 
 /**
  * Bitta o'yin holati. Barcha o'qish/yozish {@link #lock} ostida bajariladi.
  */
-@RequiredArgsConstructor
 final class Game {
 
     final String id;
     final int capacity;
     final ReentrantLock lock = new ReentrantLock();
 
-    /** O'rin raqami -> o'yinchi (o'rin raqami bo'yicha tartiblangan). */
-    final TreeMap<Integer, Seat> seats = new TreeMap<>();
+    /** O'rin raqami -> o'yinchi. Bo'sh o'rin null. */
+    private final Seat[] seats;
+    private int seatCount;
 
     Phase phase = Phase.LOBBY;
     int turn;
@@ -35,17 +33,75 @@ final class Game {
     long startToken;
     boolean tableRefreshScheduled;
 
-    Collection<Seat> seats() {
-        return seats.values();
+    Game(String id, int capacity) {
+        this.id = id;
+        this.capacity = capacity;
+        this.seats = new Seat[capacity];
+    }
+
+    /** Band o'rinlar, o'rin raqami tartibida. */
+    Iterable<Seat> seats() {
+        return () -> new Iterator<>() {
+            private int next = skipEmpty(0);
+
+            @Override
+            public boolean hasNext() {
+                return next < seats.length;
+            }
+
+            @Override
+            public Seat next() {
+                if (next >= seats.length) {
+                    throw new NoSuchElementException();
+                }
+                Seat seat = seats[next];
+                next = skipEmpty(next + 1);
+                return seat;
+            }
+        };
+    }
+
+    private int skipEmpty(int from) {
+        while (from < seats.length && seats[from] == null) {
+            from++;
+        }
+        return from;
+    }
+
+    /** @return o'rindagi o'yinchi; o'rin bo'sh yoki mavjud bo'lmasa null */
+    Seat seat(int index) {
+        return index >= 0 && index < seats.length ? seats[index] : null;
+    }
+
+    void put(Seat seat) {
+        if (seats[seat.index] == null) {
+            seatCount++;
+        }
+        seats[seat.index] = seat;
+    }
+
+    void remove(Seat seat) {
+        if (seats[seat.index] == seat) {
+            seats[seat.index] = null;
+            seatCount--;
+        }
+    }
+
+    int seatCount() {
+        return seatCount;
+    }
+
+    boolean isEmpty() {
+        return seatCount == 0;
     }
 
     Seat current() {
-        return seats.get(turn);
+        return seat(turn);
     }
 
     Seat seatOf(long userId) {
-        for (Seat seat : seats.values()) {
-            if (seat.userId == userId) {
+        for (Seat seat : seats) {
+            if (seat != null && seat.userId == userId) {
                 return seat;
             }
         }
@@ -53,43 +109,61 @@ final class Game {
     }
 
     int freeSeat() {
-        for (int i = 0; i < capacity; i++) {
-            if (!seats.containsKey(i)) {
+        for (int i = 0; i < seats.length; i++) {
+            if (seats[i] == null) {
                 return i;
             }
         }
         return -1;
     }
 
+    Seat firstSeat() {
+        int index = skipEmpty(0);
+        return index < seats.length ? seats[index] : null;
+    }
+
     long aliveCount() {
-        return seats.values().stream().filter(s -> s.alive).count();
+        long count = 0;
+        for (Seat seat : seats) {
+            if (seat != null && seat.alive) {
+                count++;
+            }
+        }
+        return count;
     }
 
     boolean isActiveAlone() {
-        return seats.values().stream().filter(s -> s.alive && s.active).count() == 1;
+        int count = 0;
+        for (Seat seat : seats) {
+            if (seat != null && aliveAndActive(seat)) {
+                count++;
+            }
+        }
+        return count == 1;
     }
 
     Seat firstAlive() {
-        return seats.values().stream().filter(s -> s.alive).findFirst().orElse(null);
+        for (Seat seat : seats) {
+            if (seat != null && seat.alive) {
+                return seat;
+            }
+        }
+        return null;
     }
 
     /**
      * {@code from} dan keyingi, shartga mos o'rin (aylanma). Hech kim bo'lmasa -1.
      */
     int nextAfter(int from, Predicate<Seat> eligible) {
-        Integer first = null;
-        for (Seat seat : seats.values()) {
-            if (!eligible.test(seat)) {
-                continue;
-            }
-            if (seat.index > from) {
+        int n = seats.length;
+        int start = Math.floorMod(from, n);
+        for (int step = 1; step <= n; step++) {
+            Seat seat = seats[(start + step) % n];
+            if (seat != null && eligible.test(seat)) {
                 return seat.index;
             }
-            if (first == null) {
-                first = seat.index;
-            }
         }
-        return first == null ? -1 : first;
+        return -1;
     }
 
     static boolean aliveAndActive(Seat seat) {
