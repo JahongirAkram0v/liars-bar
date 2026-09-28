@@ -1,5 +1,6 @@
 package com.example.liars_bar.game;
 
+import com.example.liars_bar.telegram.ChatBlockedEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -296,6 +297,23 @@ class GameServiceTest {
         assertThat(game.finished).isTrue();
         assertThat(tg.screenText(2, p2.barMessageId)).isEqualTo("P2");
         assertThat(tg.textsSentTo(2)).contains(Texts.RESTART);
+    }
+
+    @Test
+    void playerWhoBlockedTheBotIsRemovedFromGame() {
+        Game game = startGame(1, 2);
+
+        service.onChatBlocked(new ChatBlockedEvent(1));
+
+        assertThat(service.isPlaying(1)).isFalse();
+        assertThat(game.seatOf(1)).isNull();
+        assertThat(game.phase).isEqualTo(Phase.FINISHING);
+        timers.runNext();
+        assertThat(game.finished).isTrue();
+        assertThat(tg.textsSentTo(2)).contains(Texts.RESTART);
+
+        // O'yinda bo'lmagan foydalanuvchi uchun hech narsa qilinmaydi
+        service.onChatBlocked(new ChatBlockedEvent(1));
     }
 
     @Test

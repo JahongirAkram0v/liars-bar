@@ -1,11 +1,13 @@
 package com.example.liars_bar.game;
 
 import com.example.liars_bar.config.TelegramProperties;
+import com.example.liars_bar.telegram.ChatBlockedEvent;
 import com.example.liars_bar.telegram.TelegramSender;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -107,6 +109,18 @@ public class GameService {
             }
             return null;
         });
+    }
+
+    /**
+     * Botni bloklagan o'yinchi xabarlarni ko'rmaydi va yurish qila olmaydi:
+     * uni kutmasdan /quit bilan bir xil tarzda chiqariladi.
+     */
+    @EventListener
+    public void onChatBlocked(ChatBlockedEvent event) {
+        if (isPlaying(event.chatId())) {
+            log.info("User {} blocked the bot, removing from game", event.chatId());
+            onQuit(event.chatId());
+        }
     }
 
     // ------------------------------------------------------------------ callbacks (return: alert text or null)
