@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -25,6 +26,8 @@ import java.util.concurrent.locks.LockSupport;
  * Bitta xabarga navbatda kutayotgan tahrir bo'lsa, yangi tahrir uning o'rnini egallaydi:
  * Telegram'ga faqat oxirgi holat yuboriladi. Callback tasdiqlari limitga kirmaydi va
  * navbatni kutmasdan darhol yuboriladi.
+ * <p>
+ * Telegram 403 qaytarsa (bot bloklangan), {@link ChatBlockedEvent} e'lon qilinadi.
  */
 @Slf4j
 @Component
@@ -35,6 +38,7 @@ public class TelegramOutbox implements TelegramSender {
     private static final int MESSAGES_PER_SECOND = 30;
 
     private final TelegramApi api;
+    private final ApplicationEventPublisher events;
     private final PartitionedExecutor executor = new PartitionedExecutor("tg-out", 8, 10_000);
     private final RateLimiter rateLimiter = new RateLimiter(MESSAGES_PER_SECOND);
     private final ExecutorService callbackExecutor = Executors.newVirtualThreadPerTaskExecutor();
@@ -131,7 +135,10 @@ public class TelegramOutbox implements TelegramSender {
             try {
                 future.complete(callWithRetry(method, request));
             } catch (TelegramException e) {
-                if (!e.isNotModified()) {
+                if (e.isForbidden()) {
+                    log.info("Chat {} is unreachable: {}", chatId, e.getMessage());
+                    publishBlocked(chatId);
+                } else if (!e.isNotModified()) {
                     log.warn("Telegram {} failed for chat {}: {}", method, chatId, e.getMessage());
                 }
                 future.completeExceptionally(e);
@@ -147,6 +154,14 @@ public class TelegramOutbox implements TelegramSender {
             future.completeExceptionally(new IllegalStateException("outbox is full"));
         }
         return future;
+    }
+
+    private void publishBlocked(long chatId) {
+        try {
+            events.publishEvent(new ChatBlockedEvent(chatId));
+        } catch (RuntimeException e) {
+            log.error("ChatBlockedEvent handling failed for chat {}", chatId, e);
+        }
     }
 
     private JsonNode callWithRetry(String method, Map<String, Object> body) {

@@ -16,9 +16,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class TelegramOutboxTest {
 
+    private static final long BLOCKED_CHAT = 9;
+
     private final ObjectMapper mapper = new ObjectMapper();
     private final CountDownLatch release = new CountDownLatch(1);
     private final List<String> calls = new CopyOnWriteArrayList<>();
+    private final List<Object> blocked = new CopyOnWriteArrayList<>();
 
     /** Birinchi so'rovni ushlab turadi, shu vaqtda keyingilari navbatda to'planadi. */
     private final TelegramApi api = new TelegramApi(new TelegramProperties(
@@ -26,13 +29,16 @@ class TelegramOutboxTest {
         @Override
         public JsonNode call(String method, Map<String, Object> body) {
             calls.add(method + ":" + body.get("text"));
+            if (Long.valueOf(BLOCKED_CHAT).equals(body.get("chat_id"))) {
+                throw new TelegramException(403, "Forbidden: bot was blocked by the user", 0);
+            }
             if (calls.size() == 1) {
                 await(release);
             }
             return mapper.createObjectNode().put("message_id", 1);
         }
     };
-    private final TelegramOutbox outbox = new TelegramOutbox(api);
+    private final TelegramOutbox outbox = new TelegramOutbox(api, blocked::add);
 
     @AfterEach
     void tearDown() {
@@ -64,6 +70,16 @@ class TelegramOutboxTest {
         assertThat(calls).contains("answerCallbackQuery:null");
         assertThat(release.getCount()).isEqualTo(1); // birinchi so'rov hali tugamagan
         release.countDown();
+    }
+
+    @Test
+    void forbiddenChatIsReportedAsBlocked() throws Exception {
+        release.countDown();
+        assertThat(outbox.send(BLOCKED_CHAT, "hi", null))
+                .failsWithin(3, TimeUnit.SECONDS);
+        outbox.send(7, "ok", null).get(3, TimeUnit.SECONDS);
+
+        assertThat(blocked).containsExactly(new ChatBlockedEvent(BLOCKED_CHAT));
     }
 
     private void waitForCalls(int count) throws InterruptedException {

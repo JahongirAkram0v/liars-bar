@@ -25,6 +25,11 @@ public class TelegramException extends RuntimeException {
         return code == 429 || code >= 500 || code == NETWORK_ERROR;
     }
 
+    /** Foydalanuvchi botni bloklagan, akkaunti o'chirilgan yoki chat mavjud emas. */
+    public boolean isForbidden() {
+        return code == 403;
+    }
+
     public boolean isNotModified() {
         return code == 400 && getMessage().contains("message is not modified");
     }
