@@ -6,10 +6,11 @@
 #   Xss512k             - har bir platforma oqimi steki kichikroq
 #   MaxMetaspaceSize, ReservedCodeCacheSize - klass va JIT kodi uchun chegaralar
 #   TieredStopAtLevel=1 - faqat C1 kompilyator: JIT uchun CPU/xotira kam ketadi
-ARG JVM_OPTS="-XX:+UseSerialGC -Xmx64m -Xss512k -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=32m -XX:TieredStopAtLevel=1 -XX:CICompilerCount=1 -XX:+ExitOnOutOfMemoryError"
+#   enable-native-access - sqlite-jdbc native kutubxonasi uchun (Java 25 ogohlantirishisiz)
+ARG JVM_OPTS="-XX:+UseSerialGC -Xmx64m -Xss512k -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=32m -XX:TieredStopAtLevel=1 -XX:CICompilerCount=1 -XX:+ExitOnOutOfMemoryError --enable-native-access=ALL-UNNAMED"
 
 # ---------- build ----------
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /src
 COPY .mvn .mvn
 COPY mvnw pom.xml lombok.config ./
@@ -20,7 +21,7 @@ RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -q package -DskipTests \
 
 # ---------- CDS archive (training run) ----------
 # Ilova bir marta ishga tushirilib, yuklangan klasslar arxivga yoziladi: keyingi start ~2 barobar tez.
-FROM eclipse-temurin:21-jre AS cds
+FROM eclipse-temurin:25-jre AS cds
 ARG JVM_OPTS
 WORKDIR /app
 COPY --from=build /app .
@@ -30,7 +31,7 @@ RUN TELEGRAM_BOT_TOKEN=build TELEGRAM_BOT_USERNAME=build_bot \
          -jar liars-bar-*.jar
 
 # ---------- runtime ----------
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 ARG JVM_OPTS
 RUN useradd --system --uid 10001 --home /app bot && mkdir -p /data && chown bot /data
 WORKDIR /app
