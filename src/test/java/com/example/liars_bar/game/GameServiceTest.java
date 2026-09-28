@@ -38,8 +38,7 @@ class GameServiceTest {
         for (int i = 1; i < users.length; i++) {
             service.onStart(users[i], "P" + users[i], game.id);
         }
-        assertThat(game.phase).isEqualTo(Phase.STARTING);
-        assertThat(timers.runNext()).isEqualTo(SHORT);
+        // Xabarlar darhol tayyor kontent bilan yuboriladi: message_id lar kelishi bilan yurish boshlanadi
         assertThat(game.phase).isEqualTo(Phase.TURN);
         return game;
     }
@@ -77,6 +76,9 @@ class GameServiceTest {
         assertThat(tg.screenText(first.userId, first.cardMessageId)).isEqualTo(Texts.YOUR_TURN);
         Seat other = seat(game, 2);
         assertThat(tg.screenText(2, other.cardMessageId)).isEqualTo(Texts.hand(other.cards));
+        assertThat(tg.screenText(2, other.barMessageId)).isEqualTo(Texts.table(game));
+        // BAR va CARD xabarlari tayyor holatda yuboriladi: start paytida tahrir yo'q
+        assertThat(tg.log).noneMatch(o -> o.method().equals("edit") && o.messageId() > 1);
     }
 
     @Test
