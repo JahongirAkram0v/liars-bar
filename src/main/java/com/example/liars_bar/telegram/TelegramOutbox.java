@@ -3,8 +3,8 @@ package com.example.liars_bar.telegram;
 import com.example.liars_bar.common.PartitionedExecutor;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.annotation.PreDestroy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -17,10 +17,10 @@ import java.util.concurrent.locks.LockSupport;
  * bitta chatga tartib saqlanadi, umumiy tezlik Telegram limitidan oshmaydi,
  * 429/5xx/tarmoq xatolarida qayta uriniladi.
  */
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class TelegramOutbox implements TelegramSender {
-
-    private static final Logger log = LoggerFactory.getLogger(TelegramOutbox.class);
 
     private static final int MAX_ATTEMPTS = 3;
     private static final int MESSAGES_PER_SECOND = 30;
@@ -28,10 +28,6 @@ public class TelegramOutbox implements TelegramSender {
     private final TelegramApi api;
     private final PartitionedExecutor executor = new PartitionedExecutor("tg-out", 8, 10_000);
     private final RateLimiter rateLimiter = new RateLimiter(MESSAGES_PER_SECOND);
-
-    public TelegramOutbox(TelegramApi api) {
-        this.api = api;
-    }
 
     @Override
     public CompletableFuture<Long> send(long chatId, String text, Object replyMarkup) {

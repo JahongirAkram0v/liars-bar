@@ -1,8 +1,13 @@
 package com.example.liars_bar.telegram;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 /**
  * Bot API xatosi. Xabar matnida so'rov URL'i (bot tokeni) hech qachon bo'lmaydi.
  */
+@Getter
+@Accessors(fluent = true)
 public class TelegramException extends RuntimeException {
 
     public static final int NETWORK_ERROR = -1;
@@ -14,14 +19,6 @@ public class TelegramException extends RuntimeException {
         super(code + ": " + description);
         this.code = code;
         this.retryAfterSeconds = retryAfterSeconds;
-    }
-
-    public int code() {
-        return code;
-    }
-
-    public int retryAfterSeconds() {
-        return retryAfterSeconds;
     }
 
     public boolean isRetryable() {

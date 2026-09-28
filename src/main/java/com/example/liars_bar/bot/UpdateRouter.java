@@ -6,8 +6,8 @@ import com.example.liars_bar.player.PlayerStore;
 import com.example.liars_bar.telegram.TelegramSender;
 import com.example.liars_bar.telegram.Update;
 import jakarta.annotation.PreDestroy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
@@ -17,10 +17,10 @@ import java.util.regex.Pattern;
  * Update'larni tekshiradi va o'yin buyruqlariga aylantiradi.
  * Bitta foydalanuvchining update'lari ketma-ket, turli foydalanuvchilarniki parallel ishlanadi.
  */
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class UpdateRouter {
-
-    private static final Logger log = LoggerFactory.getLogger(UpdateRouter.class);
 
     private static final Pattern COUNT = Pattern.compile("x[2-4]");
     private static final Pattern CARD = Pattern.compile("[0-4]");
@@ -33,12 +33,6 @@ public class UpdateRouter {
     private final TelegramSender tg;
     private final UserThrottle throttle = new UserThrottle(8, 4);
     private final PartitionedExecutor executor = new PartitionedExecutor("update", 4, 5_000);
-
-    public UpdateRouter(GameService games, PlayerStore players, TelegramSender tg) {
-        this.games = games;
-        this.players = players;
-        this.tg = tg;
-    }
 
     public void submit(Update update) {
         Update.User user = sender(update);

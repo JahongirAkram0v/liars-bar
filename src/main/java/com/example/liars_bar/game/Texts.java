@@ -1,5 +1,8 @@
 package com.example.liars_bar.game;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -7,6 +10,7 @@ import java.util.Map;
 /**
  * Bot xabarlari va klaviaturalari (asl loyihadagi matnlar saqlangan).
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class Texts {
 
     static final List<String> EMOJIS = List.of(
@@ -31,9 +35,6 @@ final class Texts {
     static final String ALERT_PRESS_CARD = "Press card";
     static final String ALERT_ERROR = "SomeThing went wrong!!";
     static final String ALERT_BUSY = "Server band, keyinroq urinib ko'ring.";
-
-    private Texts() {
-    }
 
     static String joined(String name, int count, int capacity) {
         return name + " qo'shildi. (" + count + "/" + capacity + ")";

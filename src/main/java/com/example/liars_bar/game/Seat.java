@@ -1,5 +1,7 @@
 package com.example.liars_bar.game;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -7,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * O'yin ichidagi o'yinchi. Faqat o'z o'yinining qulfi ostida o'zgartiriladi.
  */
+@RequiredArgsConstructor
 final class Seat {
 
     final long userId;
@@ -25,11 +28,4 @@ final class Seat {
     boolean alive = true;
     boolean active = true;
     CompletableFuture<Long> sticker;
-
-    Seat(long userId, String name, int index, int chances) {
-        this.userId = userId;
-        this.name = name;
-        this.index = index;
-        this.chances = chances;
-    }
 }

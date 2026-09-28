@@ -1,5 +1,7 @@
 package com.example.liars_bar.bot;
 
+import lombok.AllArgsConstructor;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,13 +40,9 @@ final class UserThrottle {
         }
     }
 
+    @AllArgsConstructor
     private static final class Bucket {
         double tokens;
         long updatedAt;
-
-        Bucket(double tokens, long updatedAt) {
-            this.tokens = tokens;
-            this.updatedAt = updatedAt;
-        }
     }
 }

@@ -3,8 +3,9 @@ package com.example.liars_bar.game;
 import com.example.liars_bar.config.TelegramProperties;
 import com.example.liars_bar.player.PlayerStore;
 import com.example.liars_bar.telegram.TelegramSender;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,10 +29,10 @@ import java.util.regex.Pattern;
  * bir vaqtdagi harakatlar bir-birining natijasini buzmaydi. Taymerlar "token" bilan
  * himoyalangan: faza o'zgargach eski taymer hech narsa qilmaydi.
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class GameService {
-
-    private static final Logger log = LoggerFactory.getLogger(GameService.class);
 
     private static final Pattern GAME_ID = Pattern.compile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
     private static final int CARDS_PER_PLAYER = 5;
@@ -71,15 +72,6 @@ public class GameService {
                 Duration.ofSeconds(60),
                 Duration.ofHours(1)
         ));
-    }
-
-    GameService(TelegramSender tg, GameScheduler scheduler, PlayerStore playerStore,
-                Random random, Settings settings) {
-        this.tg = tg;
-        this.scheduler = scheduler;
-        this.playerStore = playerStore;
-        this.random = random;
-        this.settings = settings;
     }
 
     public boolean isPlaying(long userId) {
