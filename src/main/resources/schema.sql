@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS player (
+    id           INTEGER PRIMARY KEY,
+    name         TEXT    NOT NULL,
+    games_played INTEGER NOT NULL DEFAULT 0,
+    wins         INTEGER NOT NULL DEFAULT 0,
+    created_at   TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

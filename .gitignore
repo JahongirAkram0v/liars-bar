@@ -6,8 +6,10 @@ target/
 
 ### ###
 .env
-src/main/resources/database.properties
-src/main/resources/rabbitmq.properties
+data/
+*.db
+*.db-wal
+*.db-shm
 
 ### STS ###
 .apt_generated

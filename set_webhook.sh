@@ -1,6 +1,13 @@
 #!/bin/bash
-# shellcheck disable=SC2046
-export $(grep -v '^#' .env | xargs)
+set -euo pipefail
+set -a
+# shellcheck disable=SC1091
+source .env
+set +a
 
-curl -X POST "$TELEGRAM_BASE_URL$TELEGRAM_BOT_TOKEN/setWebhook" -d "url=$WEBHOOK_URL$TELEGRAM_BOT_WEBHOOK_PATH"
+curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
+  --data-urlencode "url=${WEBHOOK_URL}${TELEGRAM_WEBHOOK_PATH:-/webhook}" \
+  --data-urlencode "secret_token=${TELEGRAM_WEBHOOK_SECRET}" \
+  --data-urlencode 'allowed_updates=["message","callback_query"]' \
+  --data-urlencode "drop_pending_updates=true"
 echo
