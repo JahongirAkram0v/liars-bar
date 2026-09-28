@@ -35,10 +35,15 @@ public class TelegramApi {
     }
 
     public JsonNode call(String method, Map<String, Object> body) {
+        return call(method, body, TIMEOUT);
+    }
+
+    /** @param timeout long polling uchun Telegram kutish vaqtidan uzunroq bo'lishi kerak */
+    public JsonNode call(String method, Map<String, Object> body, Duration timeout) {
         HttpRequest request;
         try {
             request = HttpRequest.newBuilder(URI.create(baseUrl + method))
-                    .timeout(TIMEOUT)
+                    .timeout(timeout)
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body), StandardCharsets.UTF_8))
                     .build();

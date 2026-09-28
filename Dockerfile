@@ -25,7 +25,7 @@ ARG JVM_OPTS
 WORKDIR /app
 COPY --from=build /app .
 RUN TELEGRAM_BOT_TOKEN=build TELEGRAM_BOT_USERNAME=build_bot \
-    TELEGRAM_WEBHOOK_SECRET=build-secret-0123456789 DB_PATH=/tmp/build.db \
+    TELEGRAM_POLLING_ENABLED=false DB_PATH=/tmp/build.db \
     java $JVM_OPTS -XX:ArchiveClassesAtExit=app.jsa -Dspring.aot.enabled=true -Dspring.context.exit=onRefresh \
          -jar liars-bar-*.jar
 
@@ -39,5 +39,4 @@ USER bot
 ENV DB_PATH=/data/liars-bar.db \
     JAVA_OPTS="${JVM_OPTS}"
 VOLUME /data
-EXPOSE 8080
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -XX:SharedArchiveFile=app.jsa -Dspring.aot.enabled=true -jar liars-bar-*.jar"]
