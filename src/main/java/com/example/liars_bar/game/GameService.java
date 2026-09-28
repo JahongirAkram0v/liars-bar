@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -46,7 +47,8 @@ public class GameService {
             Duration turnTime,
             Duration shortDelay,
             Duration startTimeout,
-            Duration lobbyTtl
+            Duration lobbyTtl,
+            Duration tableRefreshDelay
     ) {
     }
 
@@ -70,7 +72,8 @@ public class GameService {
                 Duration.ofSeconds(35),
                 Duration.ofSeconds(5),
                 Duration.ofSeconds(60),
-                Duration.ofHours(1)
+                Duration.ofHours(1),
+                Duration.ofMillis(300)
         ));
     }
 
@@ -146,7 +149,7 @@ public class GameService {
             if (!seat.selected.remove(Integer.valueOf(index))) {
                 seat.selected.add(index);
             }
-            tg.edit(seat.userId, seat.cardMessageId, Texts.YOUR_TURN, Texts.bidKeyboard(seat.cards, seat.selected));
+            editCard(seat, Texts.YOUR_TURN, Texts.bidKeyboard(seat.cards, seat.selected));
             return null;
         });
     }
@@ -184,8 +187,8 @@ public class GameService {
                 return null;
             }
             seat.emoji = emoji;
-            updateTable(game);
-            tg.edit(seat.userId, seat.cardMessageId, Texts.hand(seat.cards), Texts.emojiKeyboard(seat.emoji));
+            scheduleTableRefresh(game);
+            editCard(seat, Texts.hand(seat.cards), Texts.emojiKeyboard(seat.emoji));
             return null;
         });
     }
@@ -230,6 +233,9 @@ public class GameService {
 
         List<CompletableFuture<Void>> all = new ArrayList<>();
         for (Seat seat : game.seats()) {
+            seat.barText = Texts.LOADING_BAR;
+            seat.cardText = Texts.LOADING_CARD;
+            seat.cardMarkup = null;
             all.add(tg.send(seat.userId, Texts.LOADING_BAR, null).thenAccept(id -> seat.barMessageId = id));
             all.add(tg.send(seat.userId, Texts.LOADING_CARD, null).thenAccept(id -> seat.cardMessageId = id));
         }
@@ -306,9 +312,9 @@ public class GameService {
                 continue;
             }
             if (seat.index == game.turn) {
-                tg.edit(seat.userId, seat.cardMessageId, Texts.YOUR_TURN, Texts.bidKeyboard(seat.cards, seat.selected));
+                editCard(seat, Texts.YOUR_TURN, Texts.bidKeyboard(seat.cards, seat.selected));
             } else {
-                tg.edit(seat.userId, seat.cardMessageId, Texts.hand(seat.cards), Texts.emojiKeyboard(seat.emoji));
+                editCard(seat, Texts.hand(seat.cards), Texts.emojiKeyboard(seat.emoji));
             }
         }
         setTimer(game, settings.turnTime(), this::turnTimeout);
@@ -346,11 +352,11 @@ public class GameService {
 
         updateTable(game);
         Seat next = game.current();
-        tg.edit(next.userId, next.cardMessageId, Texts.YOUR_TURN, Texts.bidKeyboard(next.cards, next.selected));
+        editCard(next, Texts.YOUR_TURN, Texts.bidKeyboard(next.cards, next.selected));
         if (keep.isEmpty()) {
-            tg.edit(seat.userId, seat.cardMessageId, Texts.NO_CARDS_LEFT, null);
+            editCard(seat, Texts.NO_CARDS_LEFT, null);
         } else {
-            tg.edit(seat.userId, seat.cardMessageId, Texts.hand(seat.cards), Texts.emojiKeyboard(seat.emoji));
+            editCard(seat, Texts.hand(seat.cards), Texts.emojiKeyboard(seat.emoji));
         }
         setTimer(game, settings.turnTime(), this::turnTimeout);
     }
@@ -368,8 +374,8 @@ public class GameService {
         String tableText = Texts.liarCalled(table, caller.name);
         String reveal = Texts.reveal(game.pile, table);
         for (Seat seat : game.seats()) {
-            tg.edit(seat.userId, seat.barMessageId, tableText, null);
-            tg.edit(seat.userId, seat.cardMessageId, reveal, null);
+            editBar(seat, tableText);
+            editCard(seat, reveal, null);
         }
         setTimer(game, settings.shortDelay(), this::shoot);
         return null;
@@ -378,8 +384,8 @@ public class GameService {
     private void shoot(Game game) {
         Seat loser = game.current();
         for (Seat seat : game.seats()) {
-            tg.edit(seat.userId, seat.barMessageId, loser.name, null);
-            tg.edit(seat.userId, seat.cardMessageId, ".", null);
+            editBar(seat, loser.name);
+            editCard(seat, ".", null);
         }
 
         if (loser.attempt + 1 == loser.chances) {
@@ -405,8 +411,8 @@ public class GameService {
         deleteStickers(game);
         Seat winner = game.current();
         for (Seat seat : game.seats()) {
-            tg.edit(seat.userId, seat.barMessageId, winner.name, null);
-            tg.edit(seat.userId, seat.cardMessageId, "..", null);
+            editBar(seat, winner.name);
+            editCard(seat, "..", null);
             tg.sendSticker(seat.userId, settings.winSticker());
             tg.send(seat.userId, Texts.RESTART, null);
         }
@@ -422,8 +428,8 @@ public class GameService {
 
     /** O'yin davomida chiqish: raund qaytadan boshlanadi yoki bitta tirik qolsa g'olib e'lon qilinadi. */
     private void leaveGame(Game game, Seat seat) {
-        tg.edit(seat.userId, seat.barMessageId, Texts.YOU_LEFT_GAME_BAR, null);
-        tg.edit(seat.userId, seat.cardMessageId, Texts.YOU_LEFT_GAME_CARD, null);
+        editBar(seat, Texts.YOU_LEFT_GAME_BAR);
+        editCard(seat, Texts.YOU_LEFT_GAME_CARD, null);
         if (seat.sticker != null) {
             seat.sticker.thenAccept(id -> tg.delete(seat.userId, id));
         }
@@ -457,7 +463,7 @@ public class GameService {
         updateTable(game);
         String text = Texts.leftLobby(seat.name);
         game.seats().stream().filter(s -> s.alive)
-                .forEach(s -> tg.edit(s.userId, s.cardMessageId, text, null));
+                .forEach(s -> editCard(s, text, null));
     }
 
     // ------------------------------------------------------------------ helpers
@@ -469,9 +475,40 @@ public class GameService {
                 && seat.cardMessageId == messageId;
     }
 
-    private void updateTable(Game game) {
+    void updateTable(Game game) {
         String text = Texts.table(game);
-        game.seats().forEach(s -> tg.edit(s.userId, s.barMessageId, text, null));
+        game.seats().forEach(s -> editBar(s, text));
+    }
+
+    /** Emoji tez-tez bosilganda stol xabari har bosishda emas, qisqa kutishdan keyin bir marta yangilanadi. */
+    private void scheduleTableRefresh(Game game) {
+        if (game.tableRefreshScheduled) {
+            return;
+        }
+        game.tableRefreshScheduled = true;
+        scheduler.schedule(settings.tableRefreshDelay(), () -> locked(game, () -> {
+            game.tableRefreshScheduled = false;
+            updateTable(game);
+        }));
+    }
+
+    /** Matn o'zgarmagan bo'lsa, Telegram'ga so'rov yuborilmaydi. */
+    private void editBar(Seat seat, String text) {
+        if (text.equals(seat.barText)) {
+            return;
+        }
+        seat.barText = text;
+        tg.edit(seat.userId, seat.barMessageId, text, null);
+    }
+
+    /** Matn va tugmalar o'zgarmagan bo'lsa, Telegram'ga so'rov yuborilmaydi. */
+    private void editCard(Seat seat, String text, Object markup) {
+        if (text.equals(seat.cardText) && Objects.equals(markup, seat.cardMarkup)) {
+            return;
+        }
+        seat.cardText = text;
+        seat.cardMarkup = markup;
+        tg.edit(seat.userId, seat.cardMessageId, text, markup);
     }
 
     private void sendStickers(Game game, String fileId) {

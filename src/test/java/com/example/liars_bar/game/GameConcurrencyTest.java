@@ -33,7 +33,8 @@ class GameConcurrencyTest {
         Fakes.Store store = new Fakes.Store();
         GameService service = new GameService(tg, scheduler, store, new SecureRandom(), new GameService.Settings(
                 "liars_bar_bot", "death", "survive", "win",
-                Duration.ofMillis(15), Duration.ofMillis(2), Duration.ofSeconds(5), Duration.ofMinutes(5)));
+                Duration.ofMillis(15), Duration.ofMillis(2), Duration.ofSeconds(5), Duration.ofMinutes(5),
+                Duration.ofMillis(1)));
 
         int gamesCount = 25;
         List<Long> users = new ArrayList<>();

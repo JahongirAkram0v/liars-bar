@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Bir xil kalitli vazifalar ketma-ket (kelgan tartibda), turli kalitlilar parallel bajariladi.
  * Navbatlar chegaralangan: to'lib ketsa, vazifa tashlab yuboriladi.
+ * Ishchi oqimlar virtual: tarmoqni kutish platforma oqimini band qilmaydi.
  */
 @Slf4j
 public final class PartitionedExecutor implements AutoCloseable {
@@ -24,11 +25,7 @@ public final class PartitionedExecutor implements AutoCloseable {
             String threadName = name + "-" + i;
             partitions[i] = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<>(queueCapacity),
-                    r -> {
-                        Thread t = new Thread(r, threadName);
-                        t.setDaemon(true);
-                        return t;
-                    });
+                    Thread.ofVirtual().name(threadName).factory());
         }
     }
 

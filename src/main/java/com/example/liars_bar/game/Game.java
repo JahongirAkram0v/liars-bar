@@ -33,6 +33,7 @@ final class Game {
     long timerToken;
     GameScheduler.Cancellable timer;
     long startToken;
+    boolean tableRefreshScheduled;
 
     Collection<Seat> seats() {
         return seats.values();
