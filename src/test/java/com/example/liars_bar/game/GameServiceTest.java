@@ -17,15 +17,13 @@ class GameServiceTest {
 
     private Fakes.Sender tg;
     private Fakes.ManualScheduler timers;
-    private Fakes.Store store;
     private GameService service;
 
     @BeforeEach
     void setUp() {
         tg = new Fakes.Sender();
         timers = new Fakes.ManualScheduler();
-        store = new Fakes.Store();
-        service = new GameService(tg, timers, store, new Random(42), new GameService.Settings(
+        service = new GameService(tg, timers, new Random(42), new GameService.Settings(
                 "liars_bar_bot", "death", "survive", "win",
                 TURN, SHORT, Duration.ofSeconds(60), Duration.ofHours(1), Duration.ofMillis(300)));
     }
@@ -190,8 +188,7 @@ class GameServiceTest {
         assertThat(service.isPlaying(2)).isFalse();
         assertThat(tg.textsSentTo(1)).contains(Texts.RESTART);
         assertThat(tg.screenText(1, p1.barMessageId)).isEqualTo("P2");
-        awaitStats();
-        assertThat(store.winners).containsExactly(2L);
+        assertThat(tg.winStickers()).isEqualTo(2);
     }
 
     @Test
@@ -289,6 +286,7 @@ class GameServiceTest {
     @Test
     void quitWithTwoPlayersMakesTheOtherWin() {
         Game game = startGame(1, 2);
+        Seat p2 = seat(game, 2);
 
         service.onQuit(1);
 
@@ -296,8 +294,8 @@ class GameServiceTest {
         assertThat(game.phase).isEqualTo(Phase.FINISHING);
         timers.runNext();
         assertThat(game.finished).isTrue();
-        awaitStats();
-        assertThat(store.winners).containsExactly(2L);
+        assertThat(tg.screenText(2, p2.barMessageId)).isEqualTo("P2");
+        assertThat(tg.textsSentTo(2)).contains(Texts.RESTART);
     }
 
     @Test
@@ -390,15 +388,7 @@ class GameServiceTest {
             }
             assertThat(game.finished).isTrue();
             assertThat(tg.anyText(Texts.GAME_ERROR)).isFalse();
-            awaitStats();
-            assertThat(store.winners).hasSize(1);
-        }
-    }
-
-    private void awaitStats() {
-        long deadline = System.currentTimeMillis() + 2_000;
-        while (store.winners.isEmpty() && System.currentTimeMillis() < deadline) {
-            Thread.onSpinWait();
+            assertThat(tg.winStickers()).isEqualTo(4);
         }
     }
 }
