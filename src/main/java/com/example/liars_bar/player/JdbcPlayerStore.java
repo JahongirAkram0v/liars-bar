@@ -1,5 +1,6 @@
 package com.example.liars_bar.player;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,13 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collection;
 
 @Repository
+@RequiredArgsConstructor
 public class JdbcPlayerStore implements PlayerStore {
 
     private final JdbcTemplate jdbc;
-
-    public JdbcPlayerStore(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
 
     @Override
     public void upsert(long id, String name) {

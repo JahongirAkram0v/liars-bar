@@ -1,7 +1,6 @@
 package com.example.liars_bar.common;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -12,9 +11,8 @@ import java.util.concurrent.TimeUnit;
  * Bir xil kalitli vazifalar ketma-ket (kelgan tartibda), turli kalitlilar parallel bajariladi.
  * Navbatlar chegaralangan: to'lib ketsa, vazifa tashlab yuboriladi.
  */
+@Slf4j
 public final class PartitionedExecutor implements AutoCloseable {
-
-    private static final Logger log = LoggerFactory.getLogger(PartitionedExecutor.class);
 
     private final String name;
     private final ThreadPoolExecutor[] partitions;

@@ -1,5 +1,7 @@
 package com.example.liars_bar.game;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.function.Predicate;
 /**
  * Bitta o'yin holati. Barcha o'qish/yozish {@link #lock} ostida bajariladi.
  */
+@RequiredArgsConstructor
 final class Game {
 
     final String id;
@@ -30,11 +33,6 @@ final class Game {
     long timerToken;
     GameScheduler.Cancellable timer;
     long startToken;
-
-    Game(String id, int capacity) {
-        this.id = id;
-        this.capacity = capacity;
-    }
 
     Collection<Seat> seats() {
         return seats.values();
