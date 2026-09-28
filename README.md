@@ -1,6 +1,6 @@
 # Liar's Bar — Telegram bot
 
-2–4 kishilik "Liar's Bar" o'yini Telegram bot ko'rinishida. Spring Boot 3.5, Java 25, SQLite.
+2–4 kishilik "Liar's Bar" o'yini Telegram bot ko'rinishida. Spring Boot 3.5, Java 25. Ma'lumotlar bazasi yo'q.
 
 ## O'yin qoidalari
 - Koloda: 6×A, 6×K, 6×Q, 2×J (joker). Har bir tirik o'yinchiga 5 tadan karta tarqatiladi.
@@ -17,7 +17,7 @@
 Telegram ◀──getUpdates (long polling)── UpdatePoller ─▶ UpdateRouter
                                                                    │ (foydalanuvchi bo'yicha navbat)
                                                                    ▼
-                        SQLite ◀── PlayerStore ◀──────────── GameService (xotirada, o'yin qulfi)
+                                                             GameService (xotirada, o'yin qulfi)
                                                                    │            ▲
                                                                    ▼            │ taymerlar
                                                            TelegramOutbox    GameScheduler
@@ -27,7 +27,7 @@ Telegram ◀──getUpdates (long polling)── UpdatePoller ─▶ UpdateRout
   Ilova ishga tushganda webhook avtomatik o'chiriladi. Bot bir vaqtda faqat bitta nusxada ishlashi kerak.
 - Faol o'yinlar xotirada saqlanadi. Bitta o'yinning barcha o'zgarishlari (tugma, `/quit`, taymer) shu o'yin qulfi ostida bajariladi.
 - Taymerlar token bilan himoyalangan: faza o'zgargach eski taymer ishlamaydi.
-- SQLite'da faqat o'yinchilar va statistika (`games_played`, `wins`) saqlanadi.
+- Ma'lumotlar bazasi ishlatilmaydi: o'yin tugagach uning ma'lumotlari o'chadi, disk bilan ishlash yo'q.
 - Server qayta ishga tushsa, davom etayotgan o'yinlar yo'qoladi.
 
 ## Tezlik
@@ -54,14 +54,13 @@ cp .env.example .env        # TELEGRAM_BOT_TOKEN va TELEGRAM_BOT_USERNAME ni to'
 ./mvnw spring-boot:run
 ```
 Sozlamalarni `.env` o'rniga muhit o'zgaruvchilari orqali ham berish mumkin.
-`DB_PATH` (standart qiymati `data/liars-bar.db`) doimiy diskda turishi kerak.
 
 ### Docker
 ```bash
 docker build -t liars-bar .
-docker run -d --restart unless-stopped --env-file .env -v liars-bar-data:/data liars-bar
+docker run -d --restart unless-stopped --env-file .env liars-bar
 ```
-Image AOT va CDS arxivi bilan yig'iladi, root bo'lmagan foydalanuvchi bilan ishlaydi, SQLite `/data` volume'da saqlanadi.
+Image AOT va CDS arxivi bilan yig'iladi, root bo'lmagan foydalanuvchi bilan ishlaydi.
 
 Konteyner kam resurs uchun sozlangan JVM bilan ishlaydi: SerialGC, 64 MB heap, faqat C1 kompilyator.
 O'lchovda xotira (RSS) bo'sh holatda 183 → 129 MB, yuklama ostida 231 → 145 MB ga tushdi.

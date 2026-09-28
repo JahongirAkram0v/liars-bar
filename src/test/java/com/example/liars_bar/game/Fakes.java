@@ -1,11 +1,9 @@
 package com.example.liars_bar.game;
 
-import com.example.liars_bar.player.PlayerStore;
 import com.example.liars_bar.telegram.TelegramSender;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -70,6 +68,10 @@ final class Fakes {
             return log.stream().anyMatch(o -> text.equals(o.text()));
         }
 
+        long winStickers() {
+            return log.stream().filter(o -> o.method().equals("sticker") && "win".equals(o.text())).count();
+        }
+
         String screenText(long chatId, long messageId) {
             Out out = screen.getOrDefault(chatId, Map.of()).get(messageId);
             return out == null ? null : out.text();
@@ -128,24 +130,6 @@ final class Fakes {
             }
             next.runnable.run();
             return next.delay;
-        }
-    }
-
-    static final class Store implements PlayerStore {
-
-        final Map<Long, String> names = new ConcurrentHashMap<>();
-        final List<Long> winners = new CopyOnWriteArrayList<>();
-        final List<Collection<Long>> games = new CopyOnWriteArrayList<>();
-
-        @Override
-        public void upsert(long id, String name) {
-            names.put(id, name);
-        }
-
-        @Override
-        public void recordGame(Collection<Long> playerIds, long winnerId) {
-            games.add(playerIds);
-            winners.add(winnerId);
         }
     }
 }

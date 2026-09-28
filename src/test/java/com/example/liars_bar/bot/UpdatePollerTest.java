@@ -49,7 +49,7 @@ class UpdatePollerTest {
         }
     };
 
-    private final UpdateRouter router = new UpdateRouter(null, null, null) {
+    private final UpdateRouter router = new UpdateRouter(null, null) {
         @Override
         public void submit(Update update) {
             routed.add(update);

@@ -6,8 +6,7 @@
 #   Xss512k             - har bir platforma oqimi steki kichikroq
 #   MaxMetaspaceSize, ReservedCodeCacheSize - klass va JIT kodi uchun chegaralar
 #   TieredStopAtLevel=1 - faqat C1 kompilyator: JIT uchun CPU/xotira kam ketadi
-#   enable-native-access - sqlite-jdbc native kutubxonasi uchun (Java 25 ogohlantirishisiz)
-ARG JVM_OPTS="-XX:+UseSerialGC -Xmx64m -Xss512k -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=32m -XX:TieredStopAtLevel=1 -XX:CICompilerCount=1 -XX:+ExitOnOutOfMemoryError --enable-native-access=ALL-UNNAMED"
+ARG JVM_OPTS="-XX:+UseSerialGC -Xmx64m -Xss512k -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=32m -XX:TieredStopAtLevel=1 -XX:CICompilerCount=1 -XX:+ExitOnOutOfMemoryError"
 
 # ---------- build ----------
 FROM eclipse-temurin:25-jdk AS build
@@ -26,18 +25,16 @@ ARG JVM_OPTS
 WORKDIR /app
 COPY --from=build /app .
 RUN TELEGRAM_BOT_TOKEN=build TELEGRAM_BOT_USERNAME=build_bot \
-    TELEGRAM_POLLING_ENABLED=false DB_PATH=/tmp/build.db \
+    TELEGRAM_POLLING_ENABLED=false \
     java $JVM_OPTS -XX:ArchiveClassesAtExit=app.jsa -Dspring.aot.enabled=true -Dspring.context.exit=onRefresh \
          -jar liars-bar-*.jar
 
 # ---------- runtime ----------
 FROM eclipse-temurin:25-jre
 ARG JVM_OPTS
-RUN useradd --system --uid 10001 --home /app bot && mkdir -p /data && chown bot /data
+RUN useradd --system --uid 10001 --home /app bot
 WORKDIR /app
 COPY --from=cds --chown=bot /app .
 USER bot
-ENV DB_PATH=/data/liars-bar.db \
-    JAVA_OPTS="${JVM_OPTS}"
-VOLUME /data
+ENV JAVA_OPTS="${JVM_OPTS}"
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -XX:SharedArchiveFile=app.jsa -Dspring.aot.enabled=true -jar liars-bar-*.jar"]

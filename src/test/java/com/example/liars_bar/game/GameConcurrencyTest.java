@@ -30,8 +30,7 @@ class GameConcurrencyTest {
     @Test
     void parallelActionsAndTimersNeverBreakGames() throws Exception {
         Fakes.Sender tg = new Fakes.Sender();
-        Fakes.Store store = new Fakes.Store();
-        GameService service = new GameService(tg, scheduler, store, new SecureRandom(), new GameService.Settings(
+        GameService service = new GameService(tg, scheduler, new SecureRandom(), new GameService.Settings(
                 "liars_bar_bot", "death", "survive", "win",
                 Duration.ofMillis(15), Duration.ofMillis(2), Duration.ofSeconds(5), Duration.ofMinutes(5),
                 Duration.ofMillis(1)));
@@ -80,11 +79,12 @@ class GameConcurrencyTest {
         assertThat(pool.awaitTermination(30, TimeUnit.SECONDS)).isTrue();
 
         long deadline = System.currentTimeMillis() + 5_000;
-        while (store.winners.size() < gamesCount && System.currentTimeMillis() < deadline) {
+        while (service.activeGames() > 0 && System.currentTimeMillis() < deadline) {
             Thread.sleep(10);
         }
         assertThat(tg.anyText(Texts.GAME_ERROR)).isFalse();
         assertThat(service.activeGames()).isZero();
-        assertThat(store.winners).hasSize(gamesCount);
+        // Har bir o'yin g'olib bilan tugadi: 4 o'yinchining har biriga g'alaba stikeri
+        assertThat(tg.winStickers()).isEqualTo(4L * gamesCount);
     }
 }

@@ -1,7 +1,6 @@
 package com.example.liars_bar.game;
 
 import com.example.liars_bar.config.TelegramProperties;
-import com.example.liars_bar.player.PlayerStore;
 import com.example.liars_bar.telegram.TelegramSender;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -57,14 +56,12 @@ public class GameService {
 
     private final TelegramSender tg;
     private final GameScheduler scheduler;
-    private final PlayerStore playerStore;
     private final Random random;
     private final Settings settings;
 
     @Autowired
-    public GameService(TelegramSender tg, GameScheduler scheduler, PlayerStore playerStore,
-                       Random random, TelegramProperties properties) {
-        this(tg, scheduler, playerStore, random, new Settings(
+    public GameService(TelegramSender tg, GameScheduler scheduler, Random random, TelegramProperties properties) {
+        this(tg, scheduler, random, new Settings(
                 properties.botUsername(),
                 properties.stickers().death(),
                 properties.stickers().survive(),
@@ -429,14 +426,7 @@ public class GameService {
             tg.sendSticker(seat.userId, settings.winSticker());
             tg.send(seat.userId, Texts.RESTART, null);
         }
-        List<Long> ids = game.seats().stream().map(s -> s.userId).toList();
-        long winnerId = winner.userId;
         end(game);
-        CompletableFuture.runAsync(() -> playerStore.recordGame(ids, winnerId))
-                .exceptionally(e -> {
-                    log.warn("Could not save game result {}", game.id, e);
-                    return null;
-                });
     }
 
     /** O'yin davomida chiqish: raund qaytadan boshlanadi yoki bitta tirik qolsa g'olib e'lon qilinadi. */

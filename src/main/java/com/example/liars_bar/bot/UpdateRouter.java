@@ -2,13 +2,10 @@ package com.example.liars_bar.bot;
 
 import com.example.liars_bar.common.PartitionedExecutor;
 import com.example.liars_bar.game.GameService;
-import com.example.liars_bar.player.PlayerStore;
 import com.example.liars_bar.telegram.TelegramSender;
 import com.example.liars_bar.telegram.Update;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.util.regex.Pattern;
@@ -17,7 +14,6 @@ import java.util.regex.Pattern;
  * Update'larni tekshiradi va o'yin buyruqlariga aylantiradi.
  * Bitta foydalanuvchining update'lari ketma-ket, turli foydalanuvchilarniki parallel ishlanadi.
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class UpdateRouter {
@@ -29,7 +25,6 @@ public class UpdateRouter {
     private static final int MAX_PAYLOAD_LENGTH = 64;
 
     private final GameService games;
-    private final PlayerStore players;
     private final TelegramSender tg;
     private final UserThrottle throttle = new UserThrottle(8, 4);
     private final PartitionedExecutor executor = new PartitionedExecutor("update", 4, 5_000);
@@ -67,7 +62,6 @@ public class UpdateRouter {
             command = command.substring(0, at);
         }
         String name = displayName(message.from());
-        saveName(userId, name);
 
         switch (command) {
             case "/start" -> {
@@ -110,14 +104,6 @@ public class UpdateRouter {
             alert = "SomeThing went wrong!!";
         }
         tg.answerCallback(userId, query.id(), alert);
-    }
-
-    private void saveName(long userId, String name) {
-        try {
-            players.upsert(userId, name);
-        } catch (DataAccessException e) {
-            log.warn("Could not save player {}", userId, e);
-        }
     }
 
     private static Update.User sender(Update update) {
