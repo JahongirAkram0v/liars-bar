@@ -225,19 +225,27 @@ public class GameService {
         return joined;
     }
 
-    /** Har bir o'yinchiga BAR va CARD xabarlarini yaratadi; hammasi tayyor bo'lgach SHUFFLE. */
+    /**
+     * Kartalarni tarqatadi va har bir o'yinchiga BAR va CARD xabarlarini darhol tayyor holatda yuboradi:
+     * "yuklanmoqda" xabari va keyingi tahrir kerak emas. Hamma message_id olingach yurish boshlanadi.
+     */
     private void beginStart(Game game) {
         game.phase = Phase.STARTING;
         long token = ++game.startToken;
         setTimer(game, settings.startTimeout(), g -> abort(g, Texts.START_FAILED));
 
+        game.turn = game.seats.firstKey();
+        deal(game);
+        String table = Texts.table(game);
+
         List<CompletableFuture<Void>> all = new ArrayList<>();
         for (Seat seat : game.seats()) {
-            seat.barText = Texts.LOADING_BAR;
-            seat.cardText = Texts.LOADING_CARD;
-            seat.cardMarkup = null;
-            all.add(tg.send(seat.userId, Texts.LOADING_BAR, null).thenAccept(id -> seat.barMessageId = id));
-            all.add(tg.send(seat.userId, Texts.LOADING_CARD, null).thenAccept(id -> seat.cardMessageId = id));
+            boolean turn = seat.index == game.turn;
+            seat.barText = table;
+            seat.cardText = turn ? Texts.YOUR_TURN : Texts.hand(seat.cards);
+            seat.cardMarkup = turn ? Texts.bidKeyboard(seat.cards, seat.selected) : Texts.emojiKeyboard(seat.emoji);
+            all.add(tg.send(seat.userId, seat.barText, null).thenAccept(id -> seat.barMessageId = id));
+            all.add(tg.send(seat.userId, seat.cardText, seat.cardMarkup).thenAccept(id -> seat.cardMessageId = id));
         }
         CompletableFuture.allOf(all.toArray(CompletableFuture[]::new)).whenComplete((ignored, error) ->
                 locked(game, () -> {
@@ -248,8 +256,8 @@ public class GameService {
                         abort(game, Texts.START_FAILED);
                         return;
                     }
-                    game.turn = game.seats.firstKey();
-                    setTimer(game, settings.shortDelay(), this::shuffle);
+                    game.phase = Phase.TURN;
+                    setTimer(game, settings.turnTime(), this::turnTimeout);
                 }));
     }
 
@@ -280,6 +288,25 @@ public class GameService {
 
     private void shuffle(Game game) {
         deleteStickers(game);
+        deal(game);
+        game.phase = Phase.TURN;
+
+        updateTable(game);
+        for (Seat seat : game.seats()) {
+            if (!seat.alive) {
+                continue;
+            }
+            if (seat.index == game.turn) {
+                editCard(seat, Texts.YOUR_TURN, Texts.bidKeyboard(seat.cards, seat.selected));
+            } else {
+                editCard(seat, Texts.hand(seat.cards), Texts.emojiKeyboard(seat.emoji));
+            }
+        }
+        setTimer(game, settings.turnTime(), this::turnTimeout);
+    }
+
+    /** Yangi raund holati: kartalar tarqatiladi, stol kartasi tanlanadi, yurish tirik o'yinchiga o'tadi. */
+    private void deal(Game game) {
         game.pile = new ArrayList<>();
         game.lastThrower = -1;
         game.lastThrowerName = null;
@@ -304,20 +331,6 @@ public class GameService {
         if (current == null || !current.alive) {
             game.turn = game.nextAfter(game.turn, Game::alive);
         }
-        game.phase = Phase.TURN;
-
-        updateTable(game);
-        for (Seat seat : game.seats()) {
-            if (!seat.alive) {
-                continue;
-            }
-            if (seat.index == game.turn) {
-                editCard(seat, Texts.YOUR_TURN, Texts.bidKeyboard(seat.cards, seat.selected));
-            } else {
-                editCard(seat, Texts.hand(seat.cards), Texts.emojiKeyboard(seat.emoji));
-            }
-        }
-        setTimer(game, settings.turnTime(), this::turnTimeout);
     }
 
     /** Vaqt tugadi: yolg'iz faol o'yinchi "Liar" deydi, aks holda tanlangan (yoki birinchi) karta tashlanadi. */

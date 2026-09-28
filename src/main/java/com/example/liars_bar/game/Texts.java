@@ -19,8 +19,6 @@ final class Texts {
     static final String CHOOSE_COUNT = "O'yinchilar sonini tanlang!";
     static final String INVITE = "O'yinni boshlash uchun dostlaringizga yuboring";
     static final String CANNOT_JOIN = "Bu o'yinga qo'shilib bo'lmaydi. Yangi o'yin uchun /start ni bosing.";
-    static final String LOADING_BAR = "O'yin yuklanmoqda ⌛️⏳";
-    static final String LOADING_CARD = "Biroz vaqt talab qiladi ⏳⌛️";
     static final String YOU_LEFT_LOBBY = "Siz guruhni tark etdingiz. /start tugmasini bosing";
     static final String YOU_LEFT_GAME_BAR = "guruhni tark etdingiz.";
     static final String YOU_LEFT_GAME_CARD = "Yangidan boshlash uchun /start ni bosing.";
