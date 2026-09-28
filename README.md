@@ -55,6 +55,72 @@ cp .env.example .env        # TELEGRAM_BOT_TOKEN va TELEGRAM_BOT_USERNAME ni to'
 ```
 Sozlamalarni `.env` o'rniga muhit o'zgaruvchilari orqali ham berish mumkin.
 
+### Termux (Android)
+
+**1. Paketlarni o'rnatish.** Git, Java, `mvnw` Maven'ni yuklab olishi uchun `curl` va `unzip`, jarayonlarni tekshirish uchun `procps` kerak:
+```bash
+pkg update && pkg upgrade -y
+pkg install -y git curl unzip procps openjdk-25
+java -version
+```
+Termux'da `openjdk-25` bo'lmasa (`pkg search openjdk` bilan tekshiring), `openjdk-21` ni o'rnating
+va 4-qadamda yig'ish buyrug'iga `-Djava.version=21` qo'shing.
+
+**2. Loyihani yuklab olish:**
+```bash
+cd ~
+git clone https://github.com/JahongirAkram0v/liars-bar.git
+cd liars-bar
+```
+Repozitoriy yopiq (private) bo'lsa, git parol o'rniga GitHub'dagi Personal Access Token'ni so'raydi.
+
+**3. Sozlamalar:**
+```bash
+cp .env.example .env
+nano .env        # TELEGRAM_BOT_TOKEN va TELEGRAM_BOT_USERNAME ni yozing (nano yo'q bo'lsa: pkg install nano)
+```
+
+**4. Jar faylni yaratish.** Maven'ni alohida o'rnatish shart emas: `mvnw` birinchi ishga tushganda uni o'zi
+`~/.m2` ga yuklab oladi (internet kerak, bir necha daqiqa ketadi):
+```bash
+chmod +x mvnw
+./mvnw -B package -DskipTests
+# openjdk-21 bilan: ./mvnw -B package -DskipTests -Djava.version=21
+ls target/*.jar  # target/liars-bar-0.0.1-SNAPSHOT.jar
+```
+
+**5. Orqa fonda ishga tushirish.** `.env` joriy papkadan o'qiladi, shuning uchun loyiha papkasida ishga tushiring:
+```bash
+cd ~/liars-bar
+termux-wake-lock  # telefon uxlaganda Android jarayonni to'xtatib qo'ymasligi uchun
+nohup java -XX:+UseSerialGC -Xmx128m -XX:TieredStopAtLevel=1 -Dspring.aot.enabled=true \
+    -jar target/liars-bar-0.0.1-SNAPSHOT.jar > bot.log 2>&1 &
+```
+Android sozlamalarida Termux uchun batareya optimizatsiyasini o'chirib qo'ying, aks holda tizim uni yopib qo'yishi mumkin.
+Termux bildirishnomasidagi "Exit" tugmasini bosmang: u barcha jarayonlarni to'xtatadi.
+
+**6. Bot ishlayotganini tekshirish:**
+```bash
+pgrep -af "^java .*liars-bar"   # jarayon ro'yxatda bo'lsa, bot ishlayapti; bo'sh bo'lsa, to'xtagan
+tail -f bot.log       # loglarni kuzatish (chiqish: Ctrl+C, bot to'xtamaydi)
+```
+
+**7. Botni to'xtatish:**
+```bash
+pkill -f "^java .*liars-bar"
+termux-wake-unlock
+```
+
+**Yangilash** (kodda o'zgarish bo'lganda):
+```bash
+cd ~/liars-bar
+pkill -f "^java .*liars-bar"
+git pull
+./mvnw -B package -DskipTests
+nohup java -XX:+UseSerialGC -Xmx128m -XX:TieredStopAtLevel=1 -Dspring.aot.enabled=true \
+    -jar target/liars-bar-0.0.1-SNAPSHOT.jar > bot.log 2>&1 &
+```
+
 ### Docker
 ```bash
 docker build -t liars-bar .
