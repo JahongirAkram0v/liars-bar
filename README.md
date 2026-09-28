@@ -63,6 +63,13 @@ docker run -d --env-file .env -p 8080:8080 -v liars-bar-data:/data liars-bar
 ```
 Image AOT va CDS arxivi bilan yig'iladi, root bo'lmagan foydalanuvchi bilan ishlaydi, SQLite `/data` volume'da saqlanadi.
 
+Konteyner kam resurs uchun sozlangan JVM bilan ishlaydi: SerialGC, 64 MB heap, faqat C1 kompilyator.
+O'lchovda xotira (RSS) bo'sh holatda 183 → 129 MB, yuklama ostida 231 → 145 MB ga tushdi.
+O'yinlar juda ko'p bo'lsa, heap'ni oshiring:
+```bash
+docker run -e JAVA_OPTS="-XX:+UseSerialGC -Xmx128m -XX:TieredStopAtLevel=1" ...
+```
+
 ## Testlar
 ```bash
 ./mvnw test
