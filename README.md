@@ -89,6 +89,16 @@ chmod +x mvnw
 ls target/*.jar  # target/liars-bar-0.0.1-SNAPSHOT.jar
 ```
 
+**Tayyor skript** (5–7 qadamlar va yangilash o'rniga):
+```bash
+./bot.sh start    # orqa fonda ishga tushirish (jar bo'lmasa, avval yig'adi)
+./bot.sh stop     # to'xtatish
+./bot.sh update   # to'xtatish + git pull + qayta yig'ish
+./bot.sh restart  # stop + start
+./bot.sh status   # ishlayaptimi
+./bot.sh log      # loglarni kuzatish
+```
+
 **5. Orqa fonda ishga tushirish.** `.env` joriy papkadan o'qiladi, shuning uchun loyiha papkasida ishga tushiring:
 ```bash
 cd ~/liars-bar
