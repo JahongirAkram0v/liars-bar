@@ -38,3 +38,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+bot.log
+bot.pid
